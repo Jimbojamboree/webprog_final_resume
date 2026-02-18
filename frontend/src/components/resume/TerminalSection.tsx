@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Send } from 'lucide-react';
+import { Send, CheckCircle, XCircle } from 'lucide-react';
 import SectionHeader from './SectionHeader';
 
 interface TerminalSectionProps {
@@ -10,6 +10,8 @@ const TerminalSection = ({ className = "" }: TerminalSectionProps) => {
   const [messages, setMessages] = useState<{ handle: string; msg: string; time: string }[]>([]);
   const [handle, setHandle] = useState('');
   const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const BACKEND = import.meta.env.VITE_BACKEND_URL ?? '';
 
@@ -24,38 +26,48 @@ const TerminalSection = ({ className = "" }: TerminalSectionProps) => {
             msg: item.comment,
             time: new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }));
-          // Reverse if needed, but backend orders by DESC (newest first). 
-          // Terminal usually shows oldest at top? 
-          // Current UI maps top-to-bottom. If we want chat log style (newest at bottom), we differ via flex-col-reverse or just order.
-          // The dummy data had 1 item.
-          // The UI has `overflow-y-auto`.
-          // Let's reverse fields from backend so oldest is first?
-          // Backend returns newest first (DESC).
           setMessages(mapped.reverse());
         }
       })
       .catch(err => console.error('Failed to fetch guestbook:', err));
   }, []);
 
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
   const sendMessage = async () => {
     if (!handle.trim() || !message.trim()) return;
+    if (sending) return;
 
-    // Optimistic update
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    setSending(true);
     const payload = { name: handle.trim(), comment: message.trim() };
 
     try {
-      setMessages((prev) => [...prev, { handle: payload.name, msg: payload.comment, time }]);
-      setMessage('');
-
-      await fetch(`${BACKEND}/api/guestbook`, {
+      const res = await fetch(`${BACKEND}/api/guestbook`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-    } catch (error) {
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.message || `Server error ${res.status}`);
+      }
+
+      const saved = await res.json();
+      const time = new Date(saved.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setMessages(prev => [...prev, { handle: saved.name, msg: saved.comment, time }]);
+      setMessage('');
+      setToast({ type: 'success', text: 'Message saved to guestbook!' });
+    } catch (error: any) {
       console.error('Failed to send message:', error);
-      // specific error handling/revert if needed
+      setToast({ type: 'error', text: error.message || 'Failed to send. Check your connection.' });
+    } finally {
+      setSending(false);
     }
   };
 
@@ -67,7 +79,20 @@ const TerminalSection = ({ className = "" }: TerminalSectionProps) => {
           Leave a digital footprint. Say hello or drop a critique.
         </p>
 
-        <div className="rounded-lg border border-border overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden relative">
+          {/* Toast notification */}
+          {toast && (
+            <div
+              className={`absolute top-3 right-3 z-10 flex items-center gap-2 px-4 py-2 rounded-md text-xs font-mono border transition-all ${toast.type === 'success'
+                  ? 'bg-emerald-900/80 border-emerald-500/50 text-emerald-300'
+                  : 'bg-red-900/80 border-red-500/50 text-red-300'
+                }`}
+            >
+              {toast.type === 'success' ? <CheckCircle size={14} /> : <XCircle size={14} />}
+              {toast.text}
+            </div>
+          )}
+
           {/* Title bar */}
           <div className="flex items-center gap-2 px-4 py-3 bg-card border-b border-border">
             <div className="flex gap-1.5">
@@ -108,7 +133,9 @@ const TerminalSection = ({ className = "" }: TerminalSectionProps) => {
             />
             <button
               onClick={sendMessage}
-              className="px-4 bg-card text-muted-foreground hover:text-primary transition-colors"
+              disabled={sending}
+              className={`px-4 bg-card transition-colors ${sending ? 'text-muted-foreground/40 cursor-wait' : 'text-muted-foreground hover:text-primary'
+                }`}
             >
               <Send size={16} />
             </button>

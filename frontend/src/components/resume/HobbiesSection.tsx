@@ -38,15 +38,18 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
     if (!handle.trim() || !message.trim()) return;
 
     const payload = { username: handle.trim(), message: message.trim() };
-    setMessages(prev => [...prev, { handle: payload.username, msg: payload.message }]);
-    setMessage('');
 
     try {
-      await fetch(`${BACKEND}/api/livechat/message`, {
+      const res = await fetch(`${BACKEND}/api/livechat/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+
+      setMessage('');
+      fetchMessages(); // Refetch to show the saved message
     } catch (err) {
       console.error('Failed to send message', err);
     }
