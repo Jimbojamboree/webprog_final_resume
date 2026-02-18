@@ -40,7 +40,7 @@ const ResumeContent = ({ isDarkMode, onToggle, scrollOffset }: ContentProps) => 
   return (
     <div style={style}>
       <div className="min-h-screen bg-background text-foreground relative">
-        <Navbar isDarkMode={isDarkMode} onToggle={onToggle} />
+        <div className="h-14" /> {/* Navbar spacer */}
         <HeroSection />
         <ExperienceSection />
         <SkillsSection />
@@ -54,6 +54,7 @@ const ResumeContent = ({ isDarkMode, onToggle, scrollOffset }: ContentProps) => 
 
 const Index = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [navTheme, setNavTheme] = useState(true); // flips immediately for smooth navbar transition
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [ripplePos, setRipplePos] = useState({ x: 0, y: 0 });
   const [transitionScroll, setTransitionScroll] = useState(0);
@@ -70,6 +71,7 @@ const Index = () => {
     setRipplePos({ x, y });
     setTransitionScroll(currentScroll);
     setIsTransitioning(true);
+    setNavTheme((prev) => !prev); // flip navbar theme immediately
 
     // Swap theme AFTER animation fully completes — no flicker
     setTimeout(() => {
@@ -81,8 +83,11 @@ const Index = () => {
 
   return (
     <>
-      {/* LANYARD LAYER — fixed, outside theme toggle, never remounts */}
-      <div className="fixed inset-0 z-[5] pointer-events-none hidden lg:block">
+      {/* LANYARD LAYER — absolute in hero, outside theme toggle, never remounts */}
+      <div
+        className="absolute top-0 left-0 right-0 z-[55] hidden lg:block pointer-events-none"
+        style={{ height: '100vh' }}
+      >
         <div className="pointer-events-auto w-full h-full">
           <LanyardErrorBoundary>
             <Suspense fallback={null}>
@@ -90,6 +95,11 @@ const Index = () => {
             </Suspense>
           </LanyardErrorBoundary>
         </div>
+      </div>
+
+      {/* NAVBAR — always visible, outside theme transition */}
+      <div className={`${navTheme ? 'theme-dark' : 'theme-light'} fixed top-0 left-0 right-0 z-[60] transition-colors duration-1000`}>
+        <Navbar isDarkMode={navTheme} onToggle={toggleTheme} />
       </div>
 
       {/* LAYER 1: Base — stays in document flow, scroll position preserved */}
