@@ -17,14 +17,14 @@ const galleryItems = [
     gradient: 'linear-gradient(165deg, #10B981 0%, #0f0f1a 100%)',
   },
   {
-    image: '/images/img_3.png',
+    image: '/images/img_10.png',
     title: 'Snapshot 03',
     subtitle: 'Captured Moment',
     borderColor: '#F59E0B',
     gradient: 'linear-gradient(135deg, #F59E0B 0%, #0f0f1a 100%)',
   },
   {
-    image: '/images/img_4.png',
+    image: '/images/img_11.png',
     title: 'Snapshot 04',
     subtitle: 'Captured Moment',
     borderColor: '#EF4444',
@@ -38,7 +38,7 @@ const galleryItems = [
     gradient: 'linear-gradient(225deg, #8B5CF6 0%, #0f0f1a 100%)',
   },
   {
-    image: '/images/img_6.png',
+    image: '/images/img_12.png',
     title: 'Snapshot 06',
     subtitle: 'Captured Moment',
     borderColor: '#06B6D4',
