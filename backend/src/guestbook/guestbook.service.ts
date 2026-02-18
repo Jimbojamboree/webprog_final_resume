@@ -11,14 +11,19 @@ export class GuestbookService {
   ) { }
 
   async create(dto: CreateCommentDto): Promise<GuestbookComment> {
+    console.log('[GuestbookService] create called with:', dto);
     const { data, error } = await this.supabase
       .from('guestbook')
       .insert(dto)
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error('[GuestbookService] INSERT error:', error);
+      throw new Error(error.message);
+    }
 
+    console.log('[GuestbookService] INSERT success:', data);
     return {
       ...data,
       createdAt: new Date(data.created_at),
@@ -26,13 +31,18 @@ export class GuestbookService {
   }
 
   async findAll(): Promise<GuestbookComment[]> {
+    console.log('[GuestbookService] findAll called');
     const { data, error } = await this.supabase
       .from('guestbook')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error('[GuestbookService] SELECT error:', error);
+      throw new Error(error.message);
+    }
 
+    console.log('[GuestbookService] SELECT returned', data?.length, 'rows');
     return (data || []).map(item => ({
       ...item,
       createdAt: new Date(item.created_at),
