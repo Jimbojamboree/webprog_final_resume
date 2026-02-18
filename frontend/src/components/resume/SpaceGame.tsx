@@ -1,16 +1,16 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, lazy, Suspense } from 'react';
+import { Rocket, Grid3X3, X } from 'lucide-react';
 
-interface SpaceGameProps {
-    onClose: () => void;
-}
+const BlockBlastGame = lazy(() => import('./BlockBlastGame'));
 
+// ── Space Invaders Game (canvas-based) ──
 interface Bullet { x: number; y: number; }
 interface Enemy { x: number; y: number; w: number; h: number; color: string; hp: number; }
 interface Star { x: number; y: number; speed: number; alpha: number; }
 interface Particle { x: number; y: number; vx: number; vy: number; life: number; color: string; size: number; }
 
 const GAME_W = 320;
-const GAME_H = 520;
+const GAME_H = 480;
 const PLAYER_W = 28;
 const PLAYER_H = 22;
 const BULLET_SPEED = 7;
@@ -19,15 +19,14 @@ const ENEMY_COLS = 6;
 const ENEMY_W = 30;
 const ENEMY_H = 20;
 
-const SpaceGame = ({ onClose }: SpaceGameProps) => {
+function SpaceInvadersGame() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const animRef = useRef<number>(0);
     const keysRef = useRef<Set<string>>(new Set());
     const touchRef = useRef<{ left: boolean; right: boolean; fire: boolean }>({ left: false, right: false, fire: false });
+    const [, setTick] = useState(0);
 
-    const [score, setScore] = useState(0);
-    const [gameOver, setGameOver] = useState(false);
-    const [highScore, setHighScore] = useState(() => {
+    const [highScore] = useState(() => {
         const saved = localStorage.getItem('space-game-hi');
         return saved ? parseInt(saved) : 0;
     });
@@ -44,6 +43,7 @@ const SpaceGame = ({ onClose }: SpaceGameProps) => {
         score: 0,
         gameOver: false,
         wave: 1,
+        highScore,
     });
 
     const spawnEnemies = useCallback(() => {
@@ -86,8 +86,7 @@ const SpaceGame = ({ onClose }: SpaceGameProps) => {
                 x, y,
                 vx: (Math.random() - 0.5) * 4,
                 vy: (Math.random() - 0.5) * 4,
-                life: 1,
-                color,
+                life: 1, color,
                 size: Math.random() * 3 + 1,
             });
         }
@@ -102,8 +101,7 @@ const SpaceGame = ({ onClose }: SpaceGameProps) => {
         g.gameOver = false;
         g.wave = 1;
         g.lastShot = 0;
-        setScore(0);
-        setGameOver(false);
+        setTick(t => t + 1);
         spawnEnemies();
         initStars();
     }, [spawnEnemies, initStars]);
@@ -131,22 +129,18 @@ const SpaceGame = ({ onClose }: SpaceGameProps) => {
             const touch = touchRef.current;
 
             if (!g.gameOver) {
-                // Player movement
                 if (keys.has('ArrowLeft') || keys.has('a') || touch.left) g.playerX -= 4;
                 if (keys.has('ArrowRight') || keys.has('d') || touch.right) g.playerX += 4;
                 g.playerX = Math.max(0, Math.min(GAME_W - PLAYER_W, g.playerX));
 
-                // Shooting
                 const now = Date.now();
                 if ((keys.has(' ') || keys.has('ArrowUp') || touch.fire) && now - g.lastShot > 200) {
                     g.bullets.push({ x: g.playerX + PLAYER_W / 2, y: GAME_H - 40 });
                     g.lastShot = now;
                 }
 
-                // Bullets
                 g.bullets = g.bullets.filter(b => { b.y -= BULLET_SPEED; return b.y > -10; });
 
-                // Enemy movement
                 let hitEdge = false;
                 g.enemies.forEach(e => {
                     e.x += g.enemySpeed * g.enemyDir;
@@ -157,7 +151,6 @@ const SpaceGame = ({ onClose }: SpaceGameProps) => {
                     g.enemies.forEach(e => { e.y += 10; });
                 }
 
-                // Collision: bullets vs enemies
                 for (let bi = g.bullets.length - 1; bi >= 0; bi--) {
                     const b = g.bullets[bi];
                     for (let ei = g.enemies.length - 1; ei >= 0; ei--) {
@@ -167,58 +160,39 @@ const SpaceGame = ({ onClose }: SpaceGameProps) => {
                             g.enemies.splice(ei, 1);
                             g.bullets.splice(bi, 1);
                             g.score += 100;
-                            setScore(g.score);
                             break;
                         }
                     }
                 }
 
-                // Enemies reaching player
                 g.enemies.forEach(e => {
                     if (e.y + e.h >= GAME_H - 40) {
                         g.gameOver = true;
-                        setGameOver(true);
-                        if (g.score > highScore) {
-                            setHighScore(g.score);
+                        if (g.score > g.highScore) {
+                            g.highScore = g.score;
                             localStorage.setItem('space-game-hi', g.score.toString());
                         }
                     }
                 });
 
-                // Next wave
                 if (g.enemies.length === 0) {
                     g.wave++;
                     spawnEnemies();
                 }
             }
 
-            // Stars
             g.stars.forEach(s => { s.y += s.speed; if (s.y > GAME_H) { s.y = 0; s.x = Math.random() * GAME_W; } });
-
-            // Particles
-            g.particles = g.particles.filter(p => {
-                p.x += p.vx; p.y += p.vy; p.life -= 0.03;
-                return p.life > 0;
-            });
+            g.particles = g.particles.filter(p => { p.x += p.vx; p.y += p.vy; p.life -= 0.03; return p.life > 0; });
 
             // ── Draw ──
             ctx.fillStyle = '#070d1a';
             ctx.fillRect(0, 0, GAME_W, GAME_H);
 
-            // Stars
-            g.stars.forEach(s => {
-                ctx.globalAlpha = s.alpha;
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(s.x, s.y, 1.5, 1.5);
-            });
+            g.stars.forEach(s => { ctx.globalAlpha = s.alpha; ctx.fillStyle = '#fff'; ctx.fillRect(s.x, s.y, 1.5, 1.5); });
             ctx.globalAlpha = 1;
 
-            // Enemies
             g.enemies.forEach(e => {
-                ctx.fillStyle = e.color;
-                ctx.shadowColor = e.color;
-                ctx.shadowBlur = 6;
-                // Draw a blocky invader shape
+                ctx.fillStyle = e.color; ctx.shadowColor = e.color; ctx.shadowBlur = 6;
                 const s = e.w / 6;
                 ctx.fillRect(e.x + s, e.y, s * 4, s);
                 ctx.fillRect(e.x, e.y + s, s * 6, s * 2);
@@ -227,76 +201,31 @@ const SpaceGame = ({ onClose }: SpaceGameProps) => {
                 ctx.shadowBlur = 0;
             });
 
-            // Bullets
-            ctx.shadowColor = '#f59e0b';
-            ctx.shadowBlur = 8;
-            g.bullets.forEach(b => {
-                ctx.fillStyle = '#f59e0b';
-                ctx.fillRect(b.x - 1.5, b.y, 3, 10);
-            });
+            ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 8;
+            g.bullets.forEach(b => { ctx.fillStyle = '#f59e0b'; ctx.fillRect(b.x - 1.5, b.y, 3, 10); });
             ctx.shadowBlur = 0;
 
-            // Player ship
             if (!g.gameOver) {
                 const px = g.playerX + PLAYER_W / 2;
                 const py = GAME_H - 30;
-                ctx.fillStyle = '#f59e0b';
-                ctx.shadowColor = '#f59e0b';
-                ctx.shadowBlur = 10;
-                ctx.beginPath();
-                ctx.moveTo(px, py - PLAYER_H);
-                ctx.lineTo(px - PLAYER_W / 2, py);
-                ctx.lineTo(px + PLAYER_W / 2, py);
-                ctx.closePath();
-                ctx.fill();
-                // Engine glow
-                ctx.fillStyle = '#ef4444';
-                ctx.beginPath();
-                ctx.moveTo(px - 5, py);
-                ctx.lineTo(px + 5, py);
-                ctx.lineTo(px, py + 6 + Math.random() * 4);
-                ctx.closePath();
-                ctx.fill();
+                ctx.fillStyle = '#f59e0b'; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 10;
+                ctx.beginPath(); ctx.moveTo(px, py - PLAYER_H); ctx.lineTo(px - PLAYER_W / 2, py); ctx.lineTo(px + PLAYER_W / 2, py); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.moveTo(px - 5, py); ctx.lineTo(px + 5, py); ctx.lineTo(px, py + 6 + Math.random() * 4); ctx.closePath(); ctx.fill();
                 ctx.shadowBlur = 0;
             }
 
-            // Particles
-            g.particles.forEach(p => {
-                ctx.globalAlpha = p.life;
-                ctx.fillStyle = p.color;
-                ctx.fillRect(p.x, p.y, p.size, p.size);
-            });
+            g.particles.forEach(p => { ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size); });
             ctx.globalAlpha = 1;
 
-            // HUD
-            ctx.fillStyle = '#4ade80';
-            ctx.font = '11px monospace';
-            ctx.textAlign = 'left';
-            ctx.fillText(`SCORE: ${g.score}`, 10, 18);
-            ctx.fillStyle = '#f59e0b';
-            ctx.textAlign = 'center';
-            ctx.fillText(`WAVE ${g.wave}`, GAME_W / 2, 18);
-            ctx.fillStyle = '#4ade80';
-            ctx.textAlign = 'right';
-            ctx.fillText(`HI: ${Math.max(g.score, highScore)}`, GAME_W - 10, 18);
+            ctx.fillStyle = '#4ade80'; ctx.font = '11px monospace'; ctx.textAlign = 'left'; ctx.fillText(`SCORE: ${g.score}`, 10, 18);
+            ctx.fillStyle = '#f59e0b'; ctx.textAlign = 'center'; ctx.fillText(`WAVE ${g.wave}`, GAME_W / 2, 18);
+            ctx.fillStyle = '#4ade80'; ctx.textAlign = 'right'; ctx.fillText(`HI: ${Math.max(g.score, g.highScore)}`, GAME_W - 10, 18);
 
-            // Game Over overlay
             if (g.gameOver) {
-                ctx.fillStyle = 'rgba(7, 13, 26, 0.75)';
-                ctx.fillRect(0, 0, GAME_W, GAME_H);
-
-                ctx.fillStyle = '#f59e0b';
-                ctx.font = 'bold 28px monospace';
-                ctx.textAlign = 'center';
-                ctx.fillText('GAME OVER', GAME_W / 2, GAME_H / 2 - 30);
-
-                ctx.fillStyle = '#4ade80';
-                ctx.font = '14px monospace';
-                ctx.fillText(`Score: ${g.score}`, GAME_W / 2, GAME_H / 2 + 10);
-
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = '12px monospace';
-                ctx.fillText('Press R or tap to restart', GAME_W / 2, GAME_H / 2 + 45);
+                ctx.fillStyle = 'rgba(7, 13, 26, 0.75)'; ctx.fillRect(0, 0, GAME_W, GAME_H);
+                ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 28px monospace'; ctx.textAlign = 'center'; ctx.fillText('GAME OVER', GAME_W / 2, GAME_H / 2 - 30);
+                ctx.fillStyle = '#4ade80'; ctx.font = '14px monospace'; ctx.fillText(`Score: ${g.score}`, GAME_W / 2, GAME_H / 2 + 10);
+                ctx.fillStyle = '#94a3b8'; ctx.font = '12px monospace'; ctx.fillText('Press R or tap to restart', GAME_W / 2, GAME_H / 2 + 45);
             }
 
             animRef.current = requestAnimationFrame(loop);
@@ -309,16 +238,71 @@ const SpaceGame = ({ onClose }: SpaceGameProps) => {
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp);
         };
-    }, [resetGame, addParticles, spawnEnemies, highScore]);
+    }, [resetGame, addParticles, spawnEnemies]);
 
-    const handleCanvasTap = () => {
-        if (gameRef.current.gameOver) resetGame();
-    };
+    return (
+        <>
+            <canvas
+                ref={canvasRef}
+                width={GAME_W}
+                height={GAME_H}
+                className="w-full"
+                style={{ aspectRatio: `${GAME_W}/${GAME_H}`, imageRendering: 'pixelated' }}
+                onClick={() => { if (gameRef.current.gameOver) resetGame(); }}
+            />
+            {/* Touch controls */}
+            <div className="flex justify-center gap-6 py-3 px-4 bg-[#0a1020]">
+                <button
+                    className="w-12 h-12 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center text-muted-foreground active:border-primary active:text-primary transition-colors text-lg select-none"
+                    onTouchStart={() => { touchRef.current.left = true; }}
+                    onTouchEnd={() => { touchRef.current.left = false; }}
+                    onMouseDown={() => { touchRef.current.left = true; }}
+                    onMouseUp={() => { touchRef.current.left = false; }}
+                    onMouseLeave={() => { touchRef.current.left = false; }}
+                >◀</button>
+                <button
+                    className="w-12 h-12 rounded-full border-2 border-primary/50 flex items-center justify-center text-primary active:bg-primary/20 transition-colors text-lg select-none"
+                    onTouchStart={() => { touchRef.current.fire = true; }}
+                    onTouchEnd={() => { touchRef.current.fire = false; }}
+                    onMouseDown={() => { touchRef.current.fire = true; }}
+                    onMouseUp={() => { touchRef.current.fire = false; }}
+                    onMouseLeave={() => { touchRef.current.fire = false; }}
+                >●</button>
+                <button
+                    className="w-12 h-12 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center text-muted-foreground active:border-primary active:text-primary transition-colors text-lg select-none"
+                    onTouchStart={() => { touchRef.current.right = true; }}
+                    onTouchEnd={() => { touchRef.current.right = false; }}
+                    onMouseDown={() => { touchRef.current.right = true; }}
+                    onMouseUp={() => { touchRef.current.right = false; }}
+                    onMouseLeave={() => { touchRef.current.right = false; }}
+                >▶</button>
+            </div>
+            <div className="font-mono text-[9px] text-muted-foreground/40 text-center py-1 bg-[#0a1020]">
+                ← → to move · SPACE to shoot
+            </div>
+        </>
+    );
+}
 
+// ── Game Modal ──
+interface SpaceGameProps {
+    onClose: () => void;
+}
+
+type GameTab = 'space' | 'blocks';
+
+const SpaceGame = ({ onClose }: SpaceGameProps) => {
+    const [activeGame, setActiveGame] = useState<GameTab>('blocks');
+
+    // Lock body scroll while modal is open
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+    }, []);
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
             <div
-                className="relative flex flex-col items-center gap-4"
+                className="relative flex flex-col items-center gap-3"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Close button */}
@@ -326,65 +310,50 @@ const SpaceGame = ({ onClose }: SpaceGameProps) => {
                     onClick={onClose}
                     className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors z-10"
                 >
-                    ✕
+                    <X size={14} />
                 </button>
+
+                {/* Game Tabs */}
+                <div className="flex gap-1 bg-card/80 border border-border rounded-full p-1 backdrop-blur-sm">
+                    <button
+                        onClick={() => setActiveGame('blocks')}
+                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full font-mono text-[11px] tracking-wider transition-all ${activeGame === 'blocks'
+                            ? 'bg-primary/15 text-primary border border-primary/30'
+                            : 'text-muted-foreground hover:text-foreground border border-transparent'
+                            }`}
+                    >
+                        <Grid3X3 size={12} />
+                        Block Blast
+                    </button>
+                    <button
+                        onClick={() => setActiveGame('space')}
+                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full font-mono text-[11px] tracking-wider transition-all ${activeGame === 'space'
+                            ? 'bg-primary/15 text-primary border border-primary/30'
+                            : 'text-muted-foreground hover:text-foreground border border-transparent'
+                            }`}
+                    >
+                        <Rocket size={12} />
+                        Space Invaders
+                    </button>
+                </div>
 
                 {/* Phone frame */}
                 <div className="w-[350px] bg-muted rounded-[2.5rem] border-2 border-border p-3 shadow-2xl shadow-primary/10">
                     {/* Notch */}
                     <div className="mx-auto w-20 h-5 bg-card rounded-b-xl mb-1" />
 
-                    {/* Screen with game canvas */}
-                    <div className="bg-[#070d1a] rounded-[1.8rem] overflow-hidden">
-                        <canvas
-                            ref={canvasRef}
-                            width={GAME_W}
-                            height={GAME_H}
-                            className="w-full"
-                            style={{ aspectRatio: `${GAME_W}/${GAME_H}`, imageRendering: 'pixelated' }}
-                            onClick={handleCanvasTap}
-                        />
-
-                        {/* Touch controls */}
-                        <div className="flex justify-center gap-6 py-3 px-4 bg-[#0a1020]">
-                            <button
-                                className="w-12 h-12 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center text-muted-foreground active:border-primary active:text-primary transition-colors text-lg select-none"
-                                onTouchStart={() => { touchRef.current.left = true; }}
-                                onTouchEnd={() => { touchRef.current.left = false; }}
-                                onMouseDown={() => { touchRef.current.left = true; }}
-                                onMouseUp={() => { touchRef.current.left = false; }}
-                                onMouseLeave={() => { touchRef.current.left = false; }}
-                            >
-                                ◀
-                            </button>
-                            <button
-                                className="w-12 h-12 rounded-full border-2 border-primary/50 flex items-center justify-center text-primary active:bg-primary/20 transition-colors text-lg select-none"
-                                onTouchStart={() => { touchRef.current.fire = true; }}
-                                onTouchEnd={() => { touchRef.current.fire = false; }}
-                                onMouseDown={() => { touchRef.current.fire = true; }}
-                                onMouseUp={() => { touchRef.current.fire = false; }}
-                                onMouseLeave={() => { touchRef.current.fire = false; }}
-                            >
-                                ●
-                            </button>
-                            <button
-                                className="w-12 h-12 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center text-muted-foreground active:border-primary active:text-primary transition-colors text-lg select-none"
-                                onTouchStart={() => { touchRef.current.right = true; }}
-                                onTouchEnd={() => { touchRef.current.right = false; }}
-                                onMouseDown={() => { touchRef.current.right = true; }}
-                                onMouseUp={() => { touchRef.current.right = false; }}
-                                onMouseLeave={() => { touchRef.current.right = false; }}
-                            >
-                                ▶
-                            </button>
-                        </div>
+                    {/* Screen */}
+                    <div className="bg-[#070d1a] rounded-[1.8rem] overflow-hidden relative" style={{ height: 572 }}>
+                        {activeGame === 'space' ? (
+                            <SpaceInvadersGame />
+                        ) : (
+                            <Suspense fallback={
+                                <div className="h-[520px] flex items-center justify-center text-muted-foreground font-mono text-xs">Loading...</div>
+                            }>
+                                <BlockBlastGame />
+                            </Suspense>
+                        )}
                     </div>
-                </div>
-
-                {/* Controls hint */}
-                <div className="font-mono text-[10px] text-muted-foreground/50 text-center space-y-0.5">
-                    <p>← → or A/D to move · SPACE to shoot</p>
-                    <p>Or use the on-screen buttons</p>
                 </div>
             </div>
         </div>

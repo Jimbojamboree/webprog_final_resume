@@ -321,7 +321,7 @@ const Index = () => {
       {/* LAYER 2: Transition overlay — renders TARGET theme, expands from click */}
       {isTransitioning && (
         <div
-          className="fixed inset-0 z-50 pointer-events-none overflow-y-scroll overflow-x-hidden"
+          className="fixed inset-0 z-50 pointer-events-none overflow-hidden"
           style={{
             animation: 'explode-clip 1s ease-in-out forwards',
           }}
