@@ -13,20 +13,26 @@ const skills = [
   { name: 'SQL', level: 'Intermediate' },
 ];
 
-const SkillsSection = () => (
-  <section id="skills" className="py-24 px-6 max-w-4xl mx-auto">
-    <SectionHeader number="02" title="Skills" />
+interface SkillsSectionProps {
+  className?: string;
+}
 
-    <div className="flex flex-wrap gap-4">
-      {skills.map((skill) => (
-        <div
-          key={skill.name}
-          className="px-5 py-3 border border-border rounded-lg bg-card flex items-center gap-3 hover:border-primary/40 transition-colors"
-        >
-          <span className="font-semibold text-foreground">{skill.name}</span>
-          <span className="text-xs text-muted-foreground">{skill.level}</span>
-        </div>
-      ))}
+const SkillsSection = ({ className = "" }: SkillsSectionProps) => (
+  <section id="skills" className={`py-24 ${className}`}>
+    <div className="px-6 max-w-4xl mx-auto">
+      <SectionHeader number="02" title="Skills" />
+
+      <div className="flex flex-wrap gap-4">
+        {skills.map((skill) => (
+          <div
+            key={skill.name}
+            className="px-5 py-3 border border-border rounded-lg bg-card flex items-center gap-3 hover:border-primary/40 transition-colors"
+          >
+            <span className="font-semibold text-foreground">{skill.name}</span>
+            <span className="text-xs text-muted-foreground">{skill.level}</span>
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 );

@@ -25,26 +25,32 @@ const experiences = [
   },
 ];
 
-const ExperienceSection = () => (
-  <section id="experience" className="py-24 px-6 max-w-4xl mx-auto">
-    <SectionHeader number="01" title="Experience" />
+interface ExperienceSectionProps {
+  className?: string;
+}
 
-    <div className="relative ml-4">
-      {/* Timeline line */}
-      <div className="absolute left-0 top-0 bottom-0 w-px bg-border" />
+const ExperienceSection = ({ className = "" }: ExperienceSectionProps) => (
+  <section id="experience" className={`py-24 ${className}`}>
+    <div className="px-6 max-w-4xl mx-auto">
+      <SectionHeader number="01" title="Experience" />
 
-      {experiences.map((exp, i) => (
-        <div key={i} className="relative pl-10 pb-16 last:pb-0">
-          {/* Dot */}
-          <div className="absolute left-0 -translate-x-1/2 w-8 h-8 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground">
-            {exp.icon}
+      <div className="relative ml-4">
+        {/* Timeline line */}
+        <div className="absolute left-0 top-0 bottom-0 w-px bg-border" />
+
+        {experiences.map((exp, i) => (
+          <div key={i} className="relative pl-10 pb-16 last:pb-0">
+            {/* Dot */}
+            <div className="absolute left-0 -translate-x-1/2 w-8 h-8 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground">
+              {exp.icon}
+            </div>
+
+            <p className="font-mono text-sm text-muted-foreground mb-2">{exp.period}</p>
+            <h3 className="text-xl font-bold mb-3 text-foreground">{exp.title}</h3>
+            <p className="text-muted-foreground leading-relaxed max-w-2xl">{exp.description}</p>
           </div>
-
-          <p className="font-mono text-sm text-muted-foreground mb-2">{exp.period}</p>
-          <h3 className="text-xl font-bold mb-3 text-foreground">{exp.title}</h3>
-          <p className="text-muted-foreground leading-relaxed max-w-2xl">{exp.description}</p>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   </section>
 );

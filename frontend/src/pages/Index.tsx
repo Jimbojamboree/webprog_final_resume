@@ -1,11 +1,32 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, Suspense, lazy, Component } from 'react';
+import type { ReactNode, ErrorInfo } from 'react';
 import { Sun, Moon } from 'lucide-react';
+import Navbar from '@/components/resume/Navbar';
 import HeroSection from '@/components/resume/HeroSection';
 import ExperienceSection from '@/components/resume/ExperienceSection';
 import SkillsSection from '@/components/resume/SkillsSection';
 import HobbiesSection from '@/components/resume/HobbiesSection';
 import TerminalSection from '@/components/resume/TerminalSection';
 import FooterSection from '@/components/resume/FooterSection';
+
+const Lanyard = lazy(() => import('@/components/resume/Lanyard'));
+
+class LanyardErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('Lanyard error:', error, info);
+  }
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
 
 interface ContentProps {
   isDarkMode: boolean;
@@ -19,18 +40,7 @@ const ResumeContent = ({ isDarkMode, onToggle, scrollOffset }: ContentProps) => 
   return (
     <div style={style}>
       <div className="min-h-screen bg-background text-foreground relative">
-        <button
-          onClick={onToggle}
-          className="fixed top-6 right-6 z-40 w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center hover:bg-secondary transition-colors"
-          aria-label="Toggle theme"
-        >
-          {isDarkMode ? (
-            <Sun size={18} className="text-foreground" />
-          ) : (
-            <Moon size={18} className="text-foreground" />
-          )}
-        </button>
-
+        <Navbar isDarkMode={isDarkMode} onToggle={onToggle} />
         <HeroSection />
         <ExperienceSection />
         <SkillsSection />
@@ -71,6 +81,17 @@ const Index = () => {
 
   return (
     <>
+      {/* LANYARD LAYER — fixed, outside theme toggle, never remounts */}
+      <div className="fixed inset-0 z-[5] pointer-events-none hidden lg:block">
+        <div className="pointer-events-auto w-full h-full">
+          <LanyardErrorBoundary>
+            <Suspense fallback={null}>
+              <Lanyard position={[0, 0, 20]} gravity={[0, -40, 0]} />
+            </Suspense>
+          </LanyardErrorBoundary>
+        </div>
+      </div>
+
       {/* LAYER 1: Base — stays in document flow, scroll position preserved */}
       <div className={isDarkMode ? 'theme-dark' : 'theme-light'}>
         <ResumeContent isDarkMode={isDarkMode} onToggle={toggleTheme} />
@@ -88,7 +109,7 @@ const Index = () => {
           <div className={!isDarkMode ? 'theme-dark' : 'theme-light'}>
             <ResumeContent
               isDarkMode={!isDarkMode}
-              onToggle={() => {}}
+              onToggle={() => { }}
               scrollOffset={transitionScroll}
             />
           </div>
