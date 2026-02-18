@@ -39,9 +39,10 @@ const skillCategories = [
 interface SkillsSectionProps {
   className?: string;
   isDarkMode?: boolean;
+  isTransition?: boolean;
 }
 
-const SkillsSection = ({ className = "", isDarkMode = true }: SkillsSectionProps) => {
+const SkillsSection = ({ className = "", isDarkMode = true, isTransition = false }: SkillsSectionProps) => {
   const [hoveredSkill, setHoveredSkill] = useState<string | null>(null);
 
   return (
@@ -50,12 +51,16 @@ const SkillsSection = ({ className = "", isDarkMode = true }: SkillsSectionProps
         <SectionHeader number="02" title="Skills" />
 
         <div className="grid lg:grid-cols-5 gap-12 items-start">
-          {/* Left Column: 3D Robot (Desktop Only) */}
+          {/* Left Column: 3D Robot (Desktop Only) — skip during theme transition to avoid lag */}
           <div className="hidden lg:block lg:col-span-2 sticky top-24 z-[55]">
             <div className="bg-[#0B1120]/30 border border-slate-800/50 rounded-xl overflow-hidden backdrop-blur-sm h-[600px] w-full">
-              <Suspense fallback={<div className="h-[600px] w-full flex items-center justify-center text-muted-foreground">Loading model...</div>}>
-                <Robot />
-              </Suspense>
+              {!isTransition ? (
+                <Suspense fallback={<div className="h-[600px] w-full flex items-center justify-center text-muted-foreground">Loading model...</div>}>
+                  <Robot />
+                </Suspense>
+              ) : (
+                <div className="h-[600px] w-full flex items-center justify-center text-muted-foreground">Loading model...</div>
+              )}
             </div>
           </div>
 

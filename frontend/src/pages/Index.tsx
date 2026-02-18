@@ -34,9 +34,10 @@ interface ContentProps {
   isDarkMode: boolean;
   onToggle: (e: React.MouseEvent) => void;
   scrollOffset?: number;
+  isTransition?: boolean;
 }
 
-const ResumeContent = ({ isDarkMode, onToggle, scrollOffset }: ContentProps) => {
+const ResumeContent = ({ isDarkMode, onToggle, scrollOffset, isTransition = false }: ContentProps) => {
   const style = scrollOffset !== undefined ? { transform: `translateY(-${scrollOffset}px)` } : {};
 
   return (
@@ -46,7 +47,7 @@ const ResumeContent = ({ isDarkMode, onToggle, scrollOffset }: ContentProps) => 
         <HeroSection />
         <AboutSection className="bg-secondary/30" />
         <ExperienceSection isDarkMode={isDarkMode} />
-        <SkillsSection isDarkMode={isDarkMode} className="bg-secondary/30" />
+        <SkillsSection isDarkMode={isDarkMode} className="bg-secondary/30" isTransition={isTransition} />
         <HobbiesSection />
         <GallerySection className="bg-secondary/30" />
         <TerminalSection />
@@ -331,6 +332,7 @@ const Index = () => {
               isDarkMode={!isDarkMode}
               onToggle={() => { }}
               scrollOffset={transitionScroll}
+              isTransition={true}
             />
           </div>
 
