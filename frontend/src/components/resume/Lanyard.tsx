@@ -91,6 +91,12 @@ function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false }: { maxSpeed?: nu
   const segmentProps = { type: 'dynamic' as const, canSleep: true, colliders: false as const, angularDamping: 4, linearDamping: 4 };
   const { nodes, materials } = useGLTF(cardGLB) as any;
   const texture = useTexture(lanyard);
+  const frontTexture = useTexture('/images/img_6.png');
+  const backTexture = useTexture('/images/yugioh.webp');
+
+  // Ensure correct color rendering on plane geometry
+  frontTexture.colorSpace = THREE.SRGBColorSpace;
+  backTexture.colorSpace = THREE.SRGBColorSpace;
   const [curve] = useState(
     () =>
       new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()])
@@ -170,14 +176,36 @@ function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false }: { maxSpeed?: nu
               drag(new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation())))
             )}
           >
-            <mesh geometry={nodes.card.geometry}>
+            {/* Front — simple plane with img_6 stretched to fill */}
+            <mesh position={[0, 0.45, 0.01]}>
+              <planeGeometry args={[0.7, 0.95]} />
               <meshPhysicalMaterial
-                map={materials.base.map}
-                map-anisotropy={16}
+                map={frontTexture}
                 clearcoat={isMobile ? 0 : 1}
                 clearcoatRoughness={0.15}
-                roughness={0.9}
-                metalness={0.8}
+                roughness={0.3}
+                metalness={0.1}
+              />
+            </mesh>
+            {/* Back — simple plane with yugioh stretched to fill */}
+            <mesh position={[0, 0.45, -0.01]} rotation={[0, Math.PI, 0]}>
+              <planeGeometry args={[0.7, 0.95]} />
+              <meshPhysicalMaterial
+                map={backTexture}
+                clearcoat={isMobile ? 0 : 1}
+                clearcoatRoughness={0.15}
+                roughness={0.3}
+                metalness={0.1}
+              />
+            </mesh>
+            {/* Card body (original GLB shape for rounded edges/frame) */}
+            <mesh geometry={nodes.card.geometry}>
+              <meshPhysicalMaterial
+                color="#1a1a2e"
+                clearcoat={isMobile ? 0 : 1}
+                clearcoatRoughness={0.15}
+                roughness={0.5}
+                metalness={0.2}
               />
             </mesh>
             <mesh geometry={nodes.clip.geometry} material={materials.metal} material-roughness={0.3} />

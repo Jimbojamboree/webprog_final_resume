@@ -1,4 +1,5 @@
 import SectionHeader from './SectionHeader';
+import ProfileCard from './ProfileCard';
 
 interface AboutSectionProps {
   className?: string;
@@ -10,21 +11,26 @@ const AboutSection = ({ className = '' }: AboutSectionProps) => (
       <SectionHeader number="00" title="About Me" />
 
       <div className="flex flex-col md:flex-row items-center gap-12">
-        {/* Left: Image */}
-        <div className="md:w-2/5 flex-shrink-0">
-          <div className="relative group">
-            <div className="absolute -inset-2 bg-primary/20 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative overflow-hidden rounded-xl border border-border">
-              <img
-                src="/images/img_1.png"
-                alt="John Michael Corpuz"
-                className="w-full aspect-[3/4] object-cover"
-              />
-            </div>
-            {/* Decorative corner accents */}
-            <div className="absolute -top-2 -left-2 w-6 h-6 border-t-2 border-l-2 border-primary rounded-tl-sm" />
-            <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-2 border-r-2 border-primary rounded-br-sm" />
-          </div>
+        {/* Left: ProfileCard */}
+        <div className="md:w-2/5 flex-shrink-0 flex justify-center relative">
+          {/* Decorative corner accents */}
+          <div className="absolute -top-2 -left-2 w-6 h-6 border-t-2 border-l-2 border-primary rounded-tl-sm z-10" />
+          <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-2 border-r-2 border-primary rounded-br-sm z-10" />
+          <ProfileCard
+            name="John Michael Corpuz"
+            title="Developer"
+            handle="Jimbojamboree"
+            status="Online"
+            contactText="Contact Me"
+            avatarUrl="/images/img_1.png"
+            showUserInfo={true}
+            enableTilt={true}
+            enableMobileTilt={false}
+            onContactClick={() => window.location.href = '#terminal'}
+            behindGlowColor="rgba(125, 190, 255, 0.67)"
+            behindGlowEnabled
+            innerGradient="linear-gradient(145deg,#60496e8c 0%,#71C4FF44 100%)"
+          />
         </div>
 
         {/* Right: About text */}
@@ -33,34 +39,32 @@ const AboutSection = ({ className = '' }: AboutSectionProps) => (
             Who I Am
           </h3>
           <p className="text-lg text-foreground/90 leading-relaxed mb-6">
-            Hi, I'm <span className="text-primary font-semibold">John Michael Corpuz</span> — a passionate
-            front-end developer based in Las Piñas, NCR. I love turning ideas into
-            interactive, pixel-perfect digital experiences.
+            Hey! I'm <span className="text-primary font-semibold">John Michael Corpuz</span>, a self-taught
+            developer from Las Piñas, NCR who genuinely enjoys building stuff for the web.
           </p>
           <p className="text-muted-foreground leading-relaxed mb-6">
-            With a strong foundation in React, TypeScript, and modern CSS frameworks,
-            I focus on building responsive and accessible web applications. I believe
-            great software is built at the intersection of clean code and thoughtful design.
+            I've been coding for about a year now and I'm hooked. I started with curiosity,
+            stayed for the thrill of seeing my ideas come to life on screen. Right now I'm
+            into React, TypeScript, and making things look and feel good with Tailwind.
           </p>
           <p className="text-muted-foreground leading-relaxed mb-8">
-            When I'm not coding, you'll find me exploring new technologies, contributing
-            to open-source projects, or leveling up my skills through personal projects
-            and experiments.
+            I'm always learning, whether it's picking up a new framework, messing around
+            with side projects, or just trying to write cleaner code than yesterday.
           </p>
 
           {/* Quick stats */}
           <div className="grid grid-cols-3 gap-6 border-t border-border pt-6">
             <div>
-              <span className="block text-2xl font-bold text-primary font-mono">3+</span>
-              <span className="text-xs text-muted-foreground font-mono uppercase tracking-wider">Years Coding</span>
-            </div>
-            <div>
-              <span className="block text-2xl font-bold text-primary font-mono">10+</span>
-              <span className="text-xs text-muted-foreground font-mono uppercase tracking-wider">Projects</span>
+              <span className="block text-2xl font-bold text-primary font-mono">1+</span>
+              <span className="text-xs text-muted-foreground font-mono uppercase tracking-wider">Year Coding</span>
             </div>
             <div>
               <span className="block text-2xl font-bold text-primary font-mono">5+</span>
-              <span className="text-xs text-muted-foreground font-mono uppercase tracking-wider">Technologies</span>
+              <span className="text-xs text-muted-foreground font-mono uppercase tracking-wider">Projects</span>
+            </div>
+            <div>
+              <span className="block text-2xl font-bold text-primary font-mono">∞</span>
+              <span className="text-xs text-muted-foreground font-mono uppercase tracking-wider">Curiosity</span>
             </div>
           </div>
         </div>

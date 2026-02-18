@@ -3,20 +3,56 @@ import { Sun, Moon } from 'lucide-react';
 interface NavbarProps {
   isDarkMode: boolean;
   onToggle: (e: React.MouseEvent) => void;
+  hideControls?: boolean;
 }
 
 const navLinks = [
   { label: 'Home', href: '#' },
-  { label: 'About', href: '#experience' },
-  { label: 'Project', href: '#skills' },
+  { label: 'About', href: '#about' },
+  { label: 'Gallery', href: '#gallery' },
   { label: 'Contact', href: '#terminal' },
 ];
 
-const Navbar = ({ isDarkMode, onToggle }: NavbarProps) => (
-  <nav className="bg-background/90 backdrop-blur-sm border-b border-primary/20 transition-colors duration-1000">
+/**
+ * Shaped bottom edge SVG — mirrors the reference image's curved/angular navbar underline.
+ * The path starts flat on the left, angles down to a center notch, then back up flat on the right.
+ */
+const NavEdge = () => (
+  <div className="absolute left-0 right-0 top-full w-full overflow-visible pointer-events-none" style={{ height: 18 }}>
+    <svg
+      viewBox="0 0 1200 18"
+      preserveAspectRatio="none"
+      className="w-full h-full"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Background fill so the shaped area matches navbar bg */}
+      <path
+        d="M0,0 L460,0 L480,12 L720,12 L740,0 L1200,0 L1200,0 L0,0 Z"
+        className="fill-background/90 transition-colors duration-1000"
+      />
+      {/* Visible border line */}
+      <path
+        d="M0,0 L460,0 L480,12 L720,12 L740,0 L1200,0"
+        fill="none"
+        className="stroke-primary/30 transition-colors duration-1000"
+        strokeWidth="1.5"
+      />
+      {/* Accent glow on the center dip */}
+      <path
+        d="M460,0 L480,12 L720,12 L740,0"
+        fill="none"
+        className="stroke-primary/50 transition-colors duration-1000"
+        strokeWidth="2"
+      />
+    </svg>
+  </div>
+);
+
+const Navbar = ({ isDarkMode, onToggle, hideControls = false }: NavbarProps) => (
+  <nav className="relative bg-background/90 backdrop-blur-sm transition-colors duration-1000">
     <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
       {/* Left nav links */}
-      <div className="hidden md:flex items-center gap-10">
+      <div className={`hidden md:flex items-center gap-10 flex-1 ${hideControls ? 'opacity-0 pointer-events-none' : ''}`}>
         {navLinks.slice(0, 2).map((link) => (
           <a
             key={link.label}
@@ -31,20 +67,12 @@ const Navbar = ({ isDarkMode, onToggle }: NavbarProps) => (
       {/* Center — Logo + Name */}
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-md bg-primary/20 border border-primary/40 flex items-center justify-center transition-colors duration-1000">
-          <span className="font-mono font-bold text-sm text-primary transition-colors duration-1000">JC</span>
-        </div>
-        <div className="flex flex-col">
-          <span className="font-mono font-bold text-sm tracking-[0.2em] text-foreground uppercase leading-tight transition-colors duration-1000">
-            John Michael Corpuz
-          </span>
-          <span className="font-mono text-[10px] tracking-[0.3em] text-primary/70 uppercase leading-tight transition-colors duration-1000">
-            Portfolio &bull; 2026
-          </span>
+          <span className="font-mono font-bold text-sm text-primary transition-colors duration-1000">JMC</span>
         </div>
       </div>
 
       {/* Right nav links + theme toggle */}
-      <div className="hidden md:flex items-center gap-10">
+      <div className={`hidden md:flex items-center gap-10 flex-1 justify-end ${hideControls ? 'opacity-0 pointer-events-none' : ''}`}>
         {navLinks.slice(2).map((link) => (
           <a
             key={link.label}
@@ -70,7 +98,8 @@ const Navbar = ({ isDarkMode, onToggle }: NavbarProps) => (
       {/* Mobile: theme toggle only */}
       <button
         onClick={onToggle}
-        className="md:hidden w-9 h-9 rounded-md bg-primary/10 border border-primary/30 flex items-center justify-center hover:bg-primary/20 transition-all duration-1000"
+        className={`md:hidden w-9 h-9 rounded-md bg-primary/10 border border-primary/30 flex items-center justify-center hover:bg-primary/20 transition-all duration-1000 ${hideControls ? 'opacity-0 pointer-events-none' : ''
+          }`}
         aria-label="Toggle theme"
       >
         {isDarkMode ? (
@@ -80,6 +109,9 @@ const Navbar = ({ isDarkMode, onToggle }: NavbarProps) => (
         )}
       </button>
     </div>
+
+    {/* Shaped bottom edge — tech/angular dip in center */}
+    <NavEdge />
   </nav>
 );
 

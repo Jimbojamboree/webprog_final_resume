@@ -3,21 +3,21 @@ import SectionHeader from './SectionHeader';
 
 const experiences = [
   {
-    period: '2023 — Present',
+    period: '2023 - Present',
     title: 'Emerging Developer',
     description:
       'Building web applications and exploring modern tech stacks. Focused on React, TypeScript, and full-stack development.',
     icon: <Briefcase size={16} />,
   },
   {
-    period: '2022 — 2023',
+    period: '2022 - 2023',
     title: 'Freelance Projects',
     description:
       'Developed websites and digital solutions for local businesses. Gained hands-on experience with real-world client requirements.',
     icon: <Briefcase size={16} />,
   },
   {
-    period: '2021 — Present',
+    period: '2021 - Present',
     title: 'Computer Science / IT',
     description:
       'Pursuing studies in technology and software engineering. Passionate about system design and clean architecture.',
