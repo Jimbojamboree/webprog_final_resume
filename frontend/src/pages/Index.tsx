@@ -285,19 +285,6 @@ const Index = () => {
         </>
       )}
 
-      {/* LANYARD LAYER — absolute in hero, outside theme toggle, never remounts */}
-      <div
-        className="absolute top-0 left-0 right-0 z-[55] hidden lg:block pointer-events-none"
-        style={{ height: '100vh' }}
-      >
-        <div className="pointer-events-auto w-full h-full">
-          <LanyardErrorBoundary>
-            <Suspense fallback={null}>
-              <Lanyard position={[0, 0, 20]} gravity={[0, -40, 0]} />
-            </Suspense>
-          </LanyardErrorBoundary>
-        </div>
-      </div>
 
       {/* NAVBAR — only after intro animation completes */}
       {introPhase === 'done' && (
@@ -314,14 +301,27 @@ const Index = () => {
       )}
 
       {/* LAYER 1: Base — stays in document flow, scroll position preserved */}
-      <div className={isDarkMode ? 'theme-dark' : 'theme-light'}>
+      <div className={`${isDarkMode ? 'theme-dark' : 'theme-light'} relative`}>
+        {/* LANYARD — absolute within hero area, scrolls with content */}
+        <div
+          className="absolute top-0 left-0 right-0 z-[58] hidden lg:block pointer-events-none"
+          style={{ height: '100vh' }}
+        >
+          <div className="pointer-events-none w-full h-full [&_canvas]:pointer-events-auto">
+            <LanyardErrorBoundary>
+              <Suspense fallback={null}>
+                <Lanyard position={[2, 0, 18]} gravity={[0, -40, 0]} fov={15} />
+              </Suspense>
+            </LanyardErrorBoundary>
+          </div>
+        </div>
         <ResumeContent isDarkMode={isDarkMode} onToggle={toggleTheme} />
       </div>
 
       {/* LAYER 2: Transition overlay — renders TARGET theme, expands from click */}
       {isTransitioning && (
         <div
-          className="fixed inset-0 z-50 pointer-events-none overflow-hidden"
+          className="fixed inset-0 z-[57] pointer-events-none overflow-hidden"
           style={{
             animation: 'explode-clip 1s ease-in-out forwards',
           }}

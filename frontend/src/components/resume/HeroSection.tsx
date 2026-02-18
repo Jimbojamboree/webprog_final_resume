@@ -12,7 +12,7 @@ const HeroSection = () => (
       }}
     />
 
-    <div className="relative z-10 w-full max-w-7xl flex flex-col lg:flex-row items-center lg:items-center justify-between gap-8">
+    <div className="relative z-[59] w-full max-w-7xl flex flex-col lg:flex-row items-center lg:items-center justify-between gap-8 pointer-events-none">
       {/* Left: Text content */}
       <div className="text-left max-w-2xl lg:flex-1">
         <p className="font-mono text-sm tracking-[0.3em] text-muted-foreground mb-8 uppercase">
@@ -32,10 +32,12 @@ const HeroSection = () => (
           Based in Las Piñas, NCR.
         </p>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 pointer-events-auto">
           <a
-            href="#"
-            className="inline-flex items-center gap-2 px-5 py-2.5 border border-border rounded-md text-sm text-foreground hover:bg-secondary transition-colors font-mono"
+            href="https://www.linkedin.com/in/john-michael-corpuz-b918b8289"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 border border-border rounded-md text-sm text-foreground hover:bg-secondary transition-colors font-mono cursor-pointer"
           >
             <Linkedin size={16} />
             LinkedIn
@@ -44,7 +46,7 @@ const HeroSection = () => (
             href="https://github.com/Jimbojamboree"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 border border-border rounded-md text-sm text-foreground hover:bg-secondary transition-colors font-mono"
+            className="inline-flex items-center gap-2 px-5 py-2.5 border border-border rounded-md text-sm text-foreground hover:bg-secondary transition-colors font-mono cursor-pointer"
           >
             <Github size={16} />
             GitHub

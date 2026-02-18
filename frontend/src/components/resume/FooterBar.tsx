@@ -76,7 +76,7 @@ const FooterBar = ({ minimal = false }: FooterBarProps) => (
             </a>
           ))}
           <div className="flex items-center gap-3 ml-2">
-            <a href="#" className="text-foreground/40 hover:text-primary transition-colors duration-1000">
+            <a href="https://www.linkedin.com/in/john-michael-corpuz-b918b8289" target="_blank" rel="noopener noreferrer" className="text-foreground/40 hover:text-primary transition-colors duration-1000">
               <Linkedin size={14} />
             </a>
             <a
