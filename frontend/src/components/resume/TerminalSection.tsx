@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Send } from 'lucide-react';
 import SectionHeader from './SectionHeader';
 
@@ -7,21 +7,54 @@ interface TerminalSectionProps {
 }
 
 const TerminalSection = ({ className = "" }: TerminalSectionProps) => {
-  const [messages, setMessages] = useState<{ handle: string; msg: string; time: string }[]>([
-    {
-      handle: 'system',
-      msg: 'Welcome to the public ledger. Leave your mark.',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    },
-  ]);
+  const [messages, setMessages] = useState<{ handle: string; msg: string; time: string }[]>([]);
   const [handle, setHandle] = useState('');
   const [message, setMessage] = useState('');
 
-  const sendMessage = () => {
+  // Fetch messages on mount
+  useEffect(() => {
+    fetch('http://localhost:3000/api/guestbook')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const mapped = data.map((item: any) => ({
+            handle: item.name,
+            msg: item.comment,
+            time: new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }));
+          // Reverse if needed, but backend orders by DESC (newest first). 
+          // Terminal usually shows oldest at top? 
+          // Current UI maps top-to-bottom. If we want chat log style (newest at bottom), we differ via flex-col-reverse or just order.
+          // The dummy data had 1 item.
+          // The UI has `overflow-y-auto`.
+          // Let's reverse fields from backend so oldest is first?
+          // Backend returns newest first (DESC).
+          setMessages(mapped.reverse());
+        }
+      })
+      .catch(err => console.error('Failed to fetch guestbook:', err));
+  });
+
+  const sendMessage = async () => {
     if (!handle.trim() || !message.trim()) return;
+
+    // Optimistic update
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    setMessages((prev) => [...prev, { handle: handle.trim(), msg: message.trim(), time }]);
-    setMessage('');
+    const payload = { name: handle.trim(), comment: message.trim() };
+
+    try {
+      setMessages((prev) => [...prev, { handle: payload.name, msg: payload.comment, time }]);
+      setMessage('');
+
+      await fetch('http://localhost:3000/api/guestbook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      // specific error handling/revert if needed
+    }
   };
 
   return (

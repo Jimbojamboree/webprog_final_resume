@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Power, Send } from 'lucide-react';
+import { io, Socket } from 'socket.io-client';
 import SectionHeader from './SectionHeader';
 
 interface HobbiesSectionProps {
@@ -11,10 +12,47 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
   const [messages, setMessages] = useState<{ handle: string; msg: string }[]>([]);
   const [handle, setHandle] = useState('');
   const [message, setMessage] = useState('');
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  useEffect(() => {
+    const newSocket = io('http://localhost:3000/chat');
+    setSocket(newSocket);
+
+    newSocket.on('connect', () => {
+      console.log('Connected to livechat');
+    });
+
+    newSocket.on('newMessage', (data: any) => {
+      setMessages((prev) => [...prev, { handle: data.username, msg: data.message }]);
+    });
+
+    // Optional: Fetch history
+    fetch('http://localhost:3000/api/livechat/messages?limit=20')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const mapped = data.map((item: any) => ({
+            handle: item.username,
+            msg: item.message
+          }));
+          setMessages(mapped.reverse());
+        }
+      })
+      .catch(err => console.error('Failed to fetch chat history', err));
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
 
   const sendMessage = () => {
-    if (!handle.trim() || !message.trim()) return;
-    setMessages((prev) => [...prev, { handle: handle.trim(), msg: message.trim() }]);
+    if (!handle.trim() || !message.trim() || !socket) return;
+
+    socket.emit('sendMessage', {
+      username: handle.trim(),
+      message: message.trim()
+    });
+
     setMessage('');
   };
 
@@ -62,7 +100,7 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
                 <div className="mx-auto w-24 h-2 bg-muted rounded-b-md border-2 border-t-0 border-border" />
               </div>
 
-              {/* CPU Tower + Controls */}
+              {/* CPU Tower + Keyboard + Controls */}
               <div className="mt-5 flex items-start gap-4 w-full max-w-sm">
                 {/* CPU */}
                 <div className="w-16 h-24 bg-muted rounded border-2 border-border flex flex-col items-center justify-between py-2.5 shrink-0">
@@ -73,13 +111,43 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
                   <button
                     onClick={() => setPcOn(!pcOn)}
                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${pcOn
-                        ? 'border-terminal-green text-terminal-green'
-                        : 'border-border text-muted-foreground'
+                      ? 'border-terminal-green text-terminal-green'
+                      : 'border-border text-muted-foreground'
                       }`}
                     style={pcOn ? { boxShadow: '0 0 8px hsl(var(--terminal-green) / 0.5)' } : undefined}
                   >
                     <Power size={10} />
                   </button>
+                </div>
+
+                {/* Mini Keyboard */}
+                <div className="flex-1 flex flex-col items-center">
+                  <div className="w-full max-w-[180px] bg-muted rounded border-2 border-border p-1.5 space-y-1">
+                    {/* Row 1 — 10 keys */}
+                    <div className="flex gap-[2px] justify-center">
+                      {Array.from({ length: 10 }).map((_, i) => (
+                        <div key={i} className="w-[14px] h-[10px] bg-card rounded-[2px] border border-border/60" />
+                      ))}
+                    </div>
+                    {/* Row 2 — 9 keys */}
+                    <div className="flex gap-[2px] justify-center">
+                      {Array.from({ length: 9 }).map((_, i) => (
+                        <div key={i} className="w-[14px] h-[10px] bg-card rounded-[2px] border border-border/60" />
+                      ))}
+                    </div>
+                    {/* Row 3 — 8 keys */}
+                    <div className="flex gap-[2px] justify-center">
+                      {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="w-[14px] h-[10px] bg-card rounded-[2px] border border-border/60" />
+                      ))}
+                    </div>
+                    {/* Spacebar row */}
+                    <div className="flex gap-[2px] justify-center">
+                      <div className="w-[14px] h-[10px] bg-card rounded-[2px] border border-border/60" />
+                      <div className="w-[80px] h-[10px] bg-card rounded-[2px] border border-border/60" />
+                      <div className="w-[14px] h-[10px] bg-card rounded-[2px] border border-border/60" />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Chat inputs (visible when on) */}
@@ -140,8 +208,8 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
                         <div
                           key={i}
                           className={`aspect-square rounded-sm ${[1, 3, 5, 7, 9].includes(i)
-                              ? 'bg-primary/80'
-                              : 'bg-terminal-green/60'
+                            ? 'bg-primary/80'
+                            : 'bg-terminal-green/60'
                             }`}
                           style={{
                             animation: `float ${1.5 + (i % 3) * 0.3}s ease-in-out infinite alternate`,
@@ -201,7 +269,7 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
           }
         `}</style>
       </div>
-    </section>
+    </section >
   );
 };
 

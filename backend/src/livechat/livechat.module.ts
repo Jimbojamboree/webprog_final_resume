@@ -6,8 +6,8 @@ import { LivechatController } from './livechat.controller';
 import { ChatMessage } from './chat-message.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ChatMessage])],
+  imports: [],
   controllers: [LivechatController],
   providers: [LivechatGateway, LivechatService],
 })
-export class LivechatModule {}
+export class LivechatModule { }

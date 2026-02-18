@@ -5,8 +5,8 @@ import { GuestbookService } from './guestbook.service';
 import { GuestbookComment } from './guestbook-comment.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([GuestbookComment])],
+  imports: [],
   controllers: [GuestbookController],
   providers: [GuestbookService],
 })
-export class GuestbookModule {}
+export class GuestbookModule { }
