@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Power, Send } from 'lucide-react';
-import { io, Socket } from 'socket.io-client';
 import SectionHeader from './SectionHeader';
 
 interface HobbiesSectionProps {
@@ -12,48 +11,45 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
   const [messages, setMessages] = useState<{ handle: string; msg: string }[]>([]);
   const [handle, setHandle] = useState('');
   const [message, setMessage] = useState('');
-  const [socket, setSocket] = useState<Socket | null>(null);
 
-  useEffect(() => {
-    const newSocket = io('http://localhost:3000/chat');
-    setSocket(newSocket);
+  const BACKEND = import.meta.env.VITE_BACKEND_URL ?? '';
 
-    newSocket.on('connect', () => {
-      console.log('Connected to livechat');
-    });
-
-    newSocket.on('newMessage', (data: any) => {
-      setMessages((prev) => [...prev, { handle: data.username, msg: data.message }]);
-    });
-
-    // Optional: Fetch history
-    fetch('http://localhost:3000/api/livechat/messages?limit=20')
+  const fetchMessages = useCallback(() => {
+    fetch(`${BACKEND}/api/livechat/messages?limit=20`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          const mapped = data.map((item: any) => ({
+          setMessages(data.map((item: any) => ({
             handle: item.username,
             msg: item.message
-          }));
-          setMessages(mapped.reverse());
+          })).reverse());
         }
       })
       .catch(err => console.error('Failed to fetch chat history', err));
+  }, [BACKEND]);
 
-    return () => {
-      newSocket.disconnect();
-    };
-  }, []);
+  useEffect(() => {
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 5000);
+    return () => clearInterval(interval);
+  }, [fetchMessages]);
 
-  const sendMessage = () => {
-    if (!handle.trim() || !message.trim() || !socket) return;
+  const sendMessage = async () => {
+    if (!handle.trim() || !message.trim()) return;
 
-    socket.emit('sendMessage', {
-      username: handle.trim(),
-      message: message.trim()
-    });
-
+    const payload = { username: handle.trim(), message: message.trim() };
+    setMessages(prev => [...prev, { handle: payload.username, msg: payload.message }]);
     setMessage('');
+
+    try {
+      await fetch(`${BACKEND}/api/livechat/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      console.error('Failed to send message', err);
+    }
   };
 
   return (
@@ -99,9 +95,33 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
                 <div className="mx-auto w-14 h-5 bg-muted border-x-2 border-border" />
                 <div className="mx-auto w-24 h-2 bg-muted rounded-b-md border-2 border-t-0 border-border" />
               </div>
+              {/* Chat inputs (visible when on) — above keyboard */}
+              {pcOn && (
+                <div className="mt-4 w-full max-w-sm flex gap-2">
+                  <input
+                    value={handle}
+                    onChange={(e) => setHandle(e.target.value)}
+                    placeholder="handle"
+                    className="w-20 px-2 py-1.5 text-xs font-mono bg-card border border-border rounded text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                  />
+                  <input
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                    placeholder="type a message..."
+                    className="flex-1 px-2 py-1.5 text-xs font-mono bg-card border border-border rounded text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                  />
+                  <button
+                    onClick={sendMessage}
+                    className="px-2 text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Send size={14} />
+                  </button>
+                </div>
+              )}
 
-              {/* CPU Tower + Keyboard + Controls */}
-              <div className="mt-5 flex items-start gap-4 w-full max-w-sm">
+              {/* CPU Tower + Keyboard */}
+              <div className="mt-4 flex items-start gap-4 w-full max-w-sm">
                 {/* CPU */}
                 <div className="w-16 h-24 bg-muted rounded border-2 border-border flex flex-col items-center justify-between py-2.5 shrink-0">
                   <div className="space-y-1.5">
@@ -149,33 +169,6 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
                     </div>
                   </div>
                 </div>
-
-                {/* Chat inputs (visible when on) */}
-                {pcOn && (
-                  <div className="flex-1 flex flex-col gap-2 pt-1">
-                    <div className="flex gap-2">
-                      <input
-                        value={handle}
-                        onChange={(e) => setHandle(e.target.value)}
-                        placeholder="handle"
-                        className="w-20 px-2 py-1.5 text-xs font-mono bg-card border border-border rounded text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-                      />
-                      <input
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                        placeholder="type a message..."
-                        className="flex-1 px-2 py-1.5 text-xs font-mono bg-card border border-border rounded text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-                      />
-                      <button
-                        onClick={sendMessage}
-                        className="px-2 text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        <Send size={14} />
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>

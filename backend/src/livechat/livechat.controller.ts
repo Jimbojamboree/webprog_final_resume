@@ -1,9 +1,20 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Post, Query, Body } from '@nestjs/common';
 import { LivechatService } from './livechat.service';
+import { IsString, IsNotEmpty } from 'class-validator';
+
+export class SendMessageDto {
+  @IsString() @IsNotEmpty() username: string;
+  @IsString() @IsNotEmpty() message: string;
+}
 
 @Controller('livechat')
 export class LivechatController {
-  constructor(private readonly livechatService: LivechatService) {}
+  constructor(private readonly livechatService: LivechatService) { }
+
+  @Post('message')
+  async sendMessage(@Body() dto: SendMessageDto) {
+    return this.livechatService.saveMessage(dto.username, dto.message);
+  }
 
   @Get('messages')
   async getMessages(@Query('limit') limit?: number) {

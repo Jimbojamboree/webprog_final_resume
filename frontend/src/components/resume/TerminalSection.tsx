@@ -11,9 +11,11 @@ const TerminalSection = ({ className = "" }: TerminalSectionProps) => {
   const [handle, setHandle] = useState('');
   const [message, setMessage] = useState('');
 
+  const BACKEND = import.meta.env.VITE_BACKEND_URL ?? '';
+
   // Fetch messages on mount
   useEffect(() => {
-    fetch('http://localhost:3000/api/guestbook')
+    fetch(`${BACKEND}/api/guestbook`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -33,7 +35,7 @@ const TerminalSection = ({ className = "" }: TerminalSectionProps) => {
         }
       })
       .catch(err => console.error('Failed to fetch guestbook:', err));
-  });
+  }, []);
 
   const sendMessage = async () => {
     if (!handle.trim() || !message.trim()) return;
@@ -46,7 +48,7 @@ const TerminalSection = ({ className = "" }: TerminalSectionProps) => {
       setMessages((prev) => [...prev, { handle: payload.name, msg: payload.comment, time }]);
       setMessage('');
 
-      await fetch('http://localhost:3000/api/guestbook', {
+      await fetch(`${BACKEND}/api/guestbook`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -94,14 +96,14 @@ const TerminalSection = ({ className = "" }: TerminalSectionProps) => {
             <input
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
-              placeholder="your_handle"
+              placeholder="your name"
               className="w-28 md:w-36 px-4 py-3 bg-card text-sm font-mono text-foreground placeholder:text-muted-foreground border-r border-border focus:outline-none"
             />
             <input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-              placeholder="Leave a message..."
+              placeholder="type something..."
               className="flex-1 px-4 py-3 bg-card text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
             <button
