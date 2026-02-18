@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Power, Send, CheckCircle, XCircle, Monitor, Smartphone, Mouse } from 'lucide-react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { Power, Send, CheckCircle, XCircle, Monitor, Smartphone, Play } from 'lucide-react';
 import SectionHeader from './SectionHeader';
+
+const SpaceGame = lazy(() => import('./SpaceGame'));
 
 interface HobbiesSectionProps {
   className?: string;
@@ -12,6 +14,7 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
   const [handle, setHandle] = useState('');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [gameOpen, setGameOpen] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const BACKEND = import.meta.env.VITE_BACKEND_URL ?? '';
@@ -211,7 +214,14 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
                   </div>
                 </div>
               </div>
-            </div>
+
+              {/* Hint to press CPU power button */}
+              {!pcOn && (
+                <div className="flex items-center justify-center gap-2 mt-3 font-mono text-xs text-muted-foreground/50 animate-pulse">
+                  <Power size={12} />
+                  <span className="tracking-wider">Press the CPU power button to turn on</span>
+                </div>
+              )}            </div>
           </div>
 
           {/* ── Mobile Phone ── */}
@@ -288,6 +298,17 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
                 </div>
               </div>
             </div>
+
+            {/* Play button */}
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={() => setGameOpen(true)}
+                className="flex items-center gap-2 px-5 py-2 rounded-full border border-primary/40 bg-primary/5 hover:bg-primary/15 hover:border-primary/60 text-primary font-mono text-xs tracking-wider transition-all group"
+              >
+                <Play size={14} className="group-hover:scale-110 transition-transform" />
+                <span>Play Game</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -303,6 +324,13 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
           }
         `}</style>
       </div>
+
+      {/* Space Game Modal */}
+      {gameOpen && (
+        <Suspense fallback={null}>
+          <SpaceGame onClose={() => setGameOpen(false)} />
+        </Suspense>
+      )}
     </section >
   );
 };

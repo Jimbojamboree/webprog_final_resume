@@ -62,6 +62,7 @@ const SkillsSection = ({ className = "", isDarkMode = true, isTransition = false
                 <div className="h-[600px] w-full flex items-center justify-center text-muted-foreground">Loading model...</div>
               )}
             </div>
+
           </div>
 
           {/* Right Column: Skills List */}
