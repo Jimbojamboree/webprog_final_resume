@@ -7,12 +7,73 @@ import { BallCollider, CuboidCollider, Physics, RigidBody, useRopeJoint, useSphe
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
 
 import cardGLB from '@/assets/lanyard/card.glb';
-import lanyard from '@/assets/lanyard/lanyard.png';
 
 import * as THREE from 'three';
 import './Lanyard.css';
 
 extend({ MeshLineGeometry, MeshLineMaterial });
+
+/** Generate a repeating lanyard strap texture with alternating Java & Python logos */
+function createLanyardTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  const w = 2048;
+  const h = 256;
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  // Dark strap background
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(0, 0, w, h);
+
+  // Subtle border lines
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, 2); ctx.lineTo(w, 2);
+  ctx.moveTo(0, h - 2); ctx.lineTo(w, h - 2);
+  ctx.stroke();
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 16;
+
+  // Load logo images and draw them onto the canvas
+  const logoPaths = ['/images/java-logo.svg', '/images/python-logo.svg'];
+  const images: HTMLImageElement[] = [];
+  let loaded = 0;
+
+  const drawLogos = () => {
+    const segW = w / 4;
+    const logoSize = h * 0.7; // logo fits within strap width
+
+    for (let i = 0; i < 4; i++) {
+      const img = images[i % 2];
+      const cx = segW * i + segW / 2; // center x of segment
+      const cy = h / 2; // center y of canvas
+
+      // Rotate 90° so logo faces upright on the vertical strap
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-Math.PI / 2); // 90° counter-clockwise
+      ctx.drawImage(img, -logoSize / 2, -logoSize / 2, logoSize, logoSize);
+      ctx.restore();
+    }
+    tex.needsUpdate = true;
+  };
+
+  logoPaths.forEach((src, idx) => {
+    const img = new Image();
+    img.onload = () => {
+      images[idx] = img;
+      loaded++;
+      if (loaded === logoPaths.length) drawLogos();
+    };
+    img.src = src;
+  });
+
+  return tex;
+}
 
 export default function Lanyard({ position = [0, 0, 24], gravity = [0, -40, 0], fov = 20, transparent = true }: {
   position?: [number, number, number];
@@ -90,7 +151,7 @@ function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false }: { maxSpeed?: nu
     dir = new THREE.Vector3();
   const segmentProps = { type: 'dynamic' as const, canSleep: true, colliders: false as const, angularDamping: 4, linearDamping: 4 };
   const { nodes, materials } = useGLTF(cardGLB) as any;
-  const texture = useTexture(lanyard);
+  const [texture] = useState(() => createLanyardTexture());
   const frontTexture = useTexture('/images/img_6.png');
   const backTexture = useTexture('/images/yugioh.webp');
 
