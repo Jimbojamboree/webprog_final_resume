@@ -17,7 +17,7 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
   const BACKEND = import.meta.env.VITE_BACKEND_URL ?? '';
 
   const fetchMessages = useCallback(() => {
-    fetch(`${BACKEND}/api/livechat/messages?limit=20`)
+    fetch(`${BACKEND}/api/livechat?limit=20`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -51,7 +51,7 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
     const payload = { username: handle.trim(), message: message.trim() };
 
     try {
-      const res = await fetch(`${BACKEND}/api/livechat/message`, {
+      const res = await fetch(`${BACKEND}/api/livechat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -94,8 +94,8 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
                     {toast && (
                       <div
                         className={`absolute top-2 right-2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-mono border transition-all ${toast.type === 'success'
-                            ? 'bg-emerald-900/80 border-emerald-500/50 text-emerald-300'
-                            : 'bg-red-900/80 border-red-500/50 text-red-300'
+                          ? 'bg-emerald-900/80 border-emerald-500/50 text-emerald-300'
+                          : 'bg-red-900/80 border-red-500/50 text-red-300'
                           }`}
                       >
                         {toast.type === 'success' ? <CheckCircle size={12} /> : <XCircle size={12} />}

@@ -11,12 +11,12 @@ export class SendMessageDto {
 export class LivechatController {
   constructor(private readonly livechatService: LivechatService) { }
 
-  @Post('message')
+  @Post()
   async sendMessage(@Body() dto: SendMessageDto) {
     return this.livechatService.saveMessage(dto.username, dto.message);
   }
 
-  @Get('messages')
+  @Get()
   async getMessages(@Query('limit') limit?: number) {
     return this.livechatService.getRecentMessages(limit || 50);
   }
