@@ -26,26 +26,28 @@ const experiences = [
 
 interface ExperienceSectionProps {
   className?: string;
+  isDarkMode?: boolean;
 }
 
-const ExperienceSection = ({ className = "" }: ExperienceSectionProps) => {
+const ExperienceSection = ({ className = "", isDarkMode = true }: ExperienceSectionProps) => {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+
+  // Light colors based on theme
+  const lightColor = isDarkMode ? "bg-amber-300/95" : "bg-blue-400/95";
+  const lightShadow = isDarkMode
+    ? "shadow-[0_0_20px_8px_rgba(212,132,26,0.6),0_0_60px_20px_rgba(212,132,26,0.25),0_0_100px_40px_rgba(212,132,26,0.1)]"
+    : "shadow-[0_0_20px_8px_rgba(59,130,246,0.6),0_0_60px_20px_rgba(59,130,246,0.25),0_0_100px_40px_rgba(59,130,246,0.1)]";
+  const rayColor = isDarkMode ? "#d4841a" : "#60a5fa";
 
   return (
     <section id="experience" className={`pt-32 pb-24 relative overflow-hidden ${className}`}>
-      {/* Hanging industrial lamp — flush to top edge */}
+      {/* Hanging industrial lamp — flush on top edge, no rod */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center pointer-events-none">
-        {/* Ceiling mount — wide bar */}
-        <div className="w-20 h-2 bg-gradient-to-b from-zinc-500 to-zinc-700 border-b border-zinc-600/60 rounded-b-sm" />
-        {/* Rod */}
-        <div className="w-1.5 h-6 bg-gradient-to-b from-zinc-600 to-zinc-700" />
-        {/* Lamp shade — large industrial */}
+        {/* Lamp shade — wide, sits right on the edge */}
         <div className="relative">
-          <svg width="200" height="60" viewBox="0 0 200 60" className="drop-shadow-lg">
-            {/* Shade body */}
-            <path d="M60 0 H140 L190 50 Q195 58 188 58 H12 Q5 58 10 50 Z" fill="url(#shade-grad)" stroke="#555" strokeWidth="1" />
-            {/* Inner shadow */}
-            <path d="M65 4 H135 L182 50 H18 Z" fill="rgba(0,0,0,0.3)" />
+          <svg width="320" height="60" viewBox="0 0 320 60" className="drop-shadow-lg">
+            <path d="M90 0 H230 L310 50 Q315 58 308 58 H12 Q5 58 10 50 Z" fill="url(#shade-grad)" stroke="#555" strokeWidth="1" />
+            <path d="M95 4 H225 L302 50 H18 Z" fill="rgba(0,0,0,0.3)" />
             <defs>
               <linearGradient id="shade-grad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#5a5a5a" />
@@ -54,18 +56,18 @@ const ExperienceSection = ({ className = "" }: ExperienceSectionProps) => {
               </linearGradient>
             </defs>
           </svg>
-          {/* Bulb — centered below shade */}
-          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex flex-col items-center">
-            <div className="w-5 h-5 rounded-full bg-amber-300/95 shadow-[0_0_20px_8px_rgba(212,132,26,0.6),0_0_60px_20px_rgba(212,132,26,0.25),0_0_100px_40px_rgba(212,132,26,0.1)]" />
+          {/* Bulb */}
+          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2">
+            <div className={`w-5 h-5 rounded-full ${lightColor} ${lightShadow} transition-all duration-1000`} />
           </div>
         </div>
       </div>
 
-      {/* LightRays background */}
-      <div className="absolute inset-0 opacity-40 pointer-events-none">
+      {/* LightRays — starts from lamp bottom edge */}
+      <div className="absolute left-0 right-0 bottom-0 opacity-40 pointer-events-none" style={{ top: '55px' }}>
         <LightRays
           raysOrigin="top-center"
-          raysColor="#d4841a"
+          raysColor={rayColor}
           raysSpeed={0.6}
           lightSpread={0.5}
           rayLength={3}

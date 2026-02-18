@@ -45,8 +45,8 @@ const ResumeContent = ({ isDarkMode, onToggle, scrollOffset }: ContentProps) => 
         <div className="h-14" /> {/* Navbar spacer */}
         <HeroSection />
         <AboutSection className="bg-secondary/30" />
-        <ExperienceSection />
-        <SkillsSection className="bg-secondary/30" />
+        <ExperienceSection isDarkMode={isDarkMode} />
+        <SkillsSection isDarkMode={isDarkMode} className="bg-secondary/30" />
         <HobbiesSection />
         <GallerySection className="bg-secondary/30" />
         <TerminalSection />
@@ -55,6 +55,8 @@ const ResumeContent = ({ isDarkMode, onToggle, scrollOffset }: ContentProps) => 
     </div>
   );
 };
+
+
 
 const Index = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
