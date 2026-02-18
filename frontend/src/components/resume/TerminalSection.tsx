@@ -84,8 +84,8 @@ const TerminalSection = ({ className = "" }: TerminalSectionProps) => {
           {toast && (
             <div
               className={`absolute top-3 right-3 z-10 flex items-center gap-2 px-4 py-2 rounded-md text-xs font-mono border transition-all ${toast.type === 'success'
-                  ? 'bg-emerald-900/80 border-emerald-500/50 text-emerald-300'
-                  : 'bg-red-900/80 border-red-500/50 text-red-300'
+                ? 'bg-emerald-900/80 border-emerald-500/50 text-emerald-300'
+                : 'bg-red-900/80 border-red-500/50 text-red-300'
                 }`}
             >
               {toast.type === 'success' ? <CheckCircle size={14} /> : <XCircle size={14} />}
@@ -105,6 +105,9 @@ const TerminalSection = ({ className = "" }: TerminalSectionProps) => {
 
           {/* Terminal body */}
           <div className="bg-terminal p-4 font-mono text-sm min-h-[180px] max-h-[280px] overflow-y-auto">
+            <p className="mb-2 text-muted-foreground/60">
+              {'>'} system: Welcome. Type a message below to sign the guestbook...
+            </p>
             {messages.map((m, i) => (
               <p key={i} className="mb-1">
                 <span className="text-terminal-green">{m.handle}</span>

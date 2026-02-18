@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Power, Send, CheckCircle, XCircle } from 'lucide-react';
+import { Power, Send, CheckCircle, XCircle, Monitor, Smartphone, Mouse } from 'lucide-react';
 import SectionHeader from './SectionHeader';
 
 interface HobbiesSectionProps {
@@ -81,8 +81,8 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
         <div className="grid md:grid-cols-2 gap-16 items-start">
           {/* ── Desktop PC ── */}
           <div>
-            <h3 className="font-mono text-sm text-muted-foreground mb-6 tracking-wide">
-              💻 Computer Programming
+            <h3 className="font-mono text-sm text-muted-foreground mb-6 tracking-wide flex items-center gap-2">
+              <Monitor size={16} /> Computer Programming
             </h3>
 
             <div className="flex flex-col items-center">
@@ -134,7 +134,7 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
                   <input
                     value={handle}
                     onChange={(e) => setHandle(e.target.value)}
-                    placeholder="handle"
+                    placeholder="your name"
                     className="w-20 px-2 py-1.5 text-xs font-mono bg-card border border-border rounded text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
                   />
                   <input
@@ -175,33 +175,39 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
                   </button>
                 </div>
 
-                {/* Mini Keyboard */}
-                <div className="flex-1 flex flex-col items-center">
-                  <div className="w-full max-w-[180px] bg-muted rounded border-2 border-border p-1.5 space-y-1">
+                {/* Keyboard + Mouse Wrapper */}
+                <div className="flex-1 flex items-end gap-3 self-end ml-1">
+                  {/* Mini Keyboard */}
+                  <div className="w-full max-w-[140px] bg-muted rounded border-2 border-border p-1.5 space-y-1">
                     {/* Row 1 — 10 keys */}
                     <div className="flex gap-[2px] justify-center">
                       {Array.from({ length: 10 }).map((_, i) => (
-                        <div key={i} className="w-[14px] h-[10px] bg-card rounded-[2px] border border-border/60" />
+                        <div key={i} className="w-[10px] h-[8px] bg-card rounded-[1px] border border-border/60" />
                       ))}
                     </div>
                     {/* Row 2 — 9 keys */}
                     <div className="flex gap-[2px] justify-center">
                       {Array.from({ length: 9 }).map((_, i) => (
-                        <div key={i} className="w-[14px] h-[10px] bg-card rounded-[2px] border border-border/60" />
+                        <div key={i} className="w-[10px] h-[8px] bg-card rounded-[1px] border border-border/60" />
                       ))}
                     </div>
                     {/* Row 3 — 8 keys */}
                     <div className="flex gap-[2px] justify-center">
                       {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="w-[14px] h-[10px] bg-card rounded-[2px] border border-border/60" />
+                        <div key={i} className="w-[10px] h-[8px] bg-card rounded-[1px] border border-border/60" />
                       ))}
                     </div>
                     {/* Spacebar row */}
                     <div className="flex gap-[2px] justify-center">
-                      <div className="w-[14px] h-[10px] bg-card rounded-[2px] border border-border/60" />
-                      <div className="w-[80px] h-[10px] bg-card rounded-[2px] border border-border/60" />
-                      <div className="w-[14px] h-[10px] bg-card rounded-[2px] border border-border/60" />
+                      <div className="w-[10px] h-[8px] bg-card rounded-[1px] border border-border/60" />
+                      <div className="w-[60px] h-[8px] bg-card rounded-[1px] border border-border/60" />
+                      <div className="w-[10px] h-[8px] bg-card rounded-[1px] border border-border/60" />
                     </div>
+                  </div>
+
+                  {/* Mouse */}
+                  <div className="w-9 h-14 bg-muted border-2 border-border rounded-t-2xl rounded-b-xl relative shrink-0 shadow-sm flex justify-center">
+                    <div className="w-[1px] h-4 bg-border/80 mt-2" />
                   </div>
                 </div>
               </div>
@@ -210,8 +216,8 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
 
           {/* ── Mobile Phone ── */}
           <div>
-            <h3 className="font-mono text-sm text-muted-foreground mb-6 tracking-wide">
-              📱 Mobile Gaming
+            <h3 className="font-mono text-sm text-muted-foreground mb-6 tracking-wide flex items-center gap-2">
+              <Smartphone size={16} /> Mobile Gaming
             </h3>
 
             <div className="flex justify-center">
