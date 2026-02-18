@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Power, Send } from 'lucide-react';
+import { Power, Send, CheckCircle, XCircle } from 'lucide-react';
 import SectionHeader from './SectionHeader';
 
 interface HobbiesSectionProps {
@@ -11,6 +11,8 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
   const [messages, setMessages] = useState<{ handle: string; msg: string }[]>([]);
   const [handle, setHandle] = useState('');
   const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const BACKEND = import.meta.env.VITE_BACKEND_URL ?? '';
 
@@ -34,9 +36,18 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
     return () => clearInterval(interval);
   }, [fetchMessages]);
 
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
   const sendMessage = async () => {
     if (!handle.trim() || !message.trim()) return;
+    if (sending) return;
 
+    setSending(true);
     const payload = { username: handle.trim(), message: message.trim() };
 
     try {
@@ -46,12 +57,19 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error(`Server error ${res.status}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.message || `Server error ${res.status}`);
+      }
 
       setMessage('');
-      fetchMessages(); // Refetch to show the saved message
-    } catch (err) {
+      fetchMessages();
+      setToast({ type: 'success', text: 'Message sent!' });
+    } catch (err: any) {
       console.error('Failed to send message', err);
+      setToast({ type: 'error', text: err.message || 'Failed to send.' });
+    } finally {
+      setSending(false);
     }
   };
 
@@ -71,7 +89,19 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
               {/* Monitor */}
               <div className="relative w-full max-w-sm">
                 <div className="bg-muted rounded-lg p-2.5 border-2 border-border">
-                  <div className="bg-terminal rounded aspect-[16/10] flex items-center justify-center overflow-hidden">
+                  <div className="bg-terminal rounded aspect-[16/10] flex items-center justify-center overflow-hidden relative">
+                    {/* Toast notification */}
+                    {toast && (
+                      <div
+                        className={`absolute top-2 right-2 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-mono border transition-all ${toast.type === 'success'
+                            ? 'bg-emerald-900/80 border-emerald-500/50 text-emerald-300'
+                            : 'bg-red-900/80 border-red-500/50 text-red-300'
+                          }`}
+                      >
+                        {toast.type === 'success' ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                        {toast.text}
+                      </div>
+                    )}
                     {pcOn ? (
                       <div className="w-full h-full p-3 font-mono text-[11px] leading-relaxed overflow-y-auto">
                         <p className="text-terminal-green">
@@ -116,7 +146,9 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
                   />
                   <button
                     onClick={sendMessage}
-                    className="px-2 text-muted-foreground hover:text-primary transition-colors"
+                    disabled={sending}
+                    className={`px-2 transition-colors ${sending ? 'text-muted-foreground/40 cursor-wait' : 'text-muted-foreground hover:text-primary'
+                      }`}
                   >
                     <Send size={14} />
                   </button>
