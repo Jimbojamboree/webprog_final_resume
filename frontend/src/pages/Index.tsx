@@ -36,16 +36,17 @@ interface ContentProps {
   onToggle: (e: React.MouseEvent) => void;
   scrollOffset?: number;
   isTransition?: boolean;
+  introPhase?: 'closed' | 'opening' | 'done';
 }
 
-const ResumeContent = ({ isDarkMode, onToggle, scrollOffset, isTransition = false }: ContentProps) => {
+const ResumeContent = ({ isDarkMode, onToggle, scrollOffset, isTransition = false, introPhase = 'done' }: ContentProps) => {
   const style = scrollOffset !== undefined ? { transform: `translateY(-${scrollOffset}px)` } : {};
 
   return (
     <div style={style}>
       <div className="min-h-screen bg-background text-foreground relative">
         <div className="h-14" /> {/* Navbar spacer */}
-        <HeroSection />
+        <HeroSection introPhase={introPhase} isTransition={isTransition} />
         <AboutSection className="bg-secondary/30" />
         <ExperienceSection isDarkMode={isDarkMode} />
         <SkillsSection isDarkMode={isDarkMode} className="bg-secondary/30" isTransition={isTransition} />
@@ -342,7 +343,7 @@ const Index = () => {
             </LanyardErrorBoundary>
           </div>
         </div>
-        <ResumeContent isDarkMode={isDarkMode} onToggle={toggleTheme} />
+        <ResumeContent isDarkMode={isDarkMode} onToggle={toggleTheme} introPhase={introPhase} />
       </div>
 
       {/* LAYER 2: Transition overlay — renders TARGET theme, expands from click */}
@@ -360,6 +361,7 @@ const Index = () => {
               onToggle={() => { }}
               scrollOffset={transitionScroll}
               isTransition={true}
+              introPhase={introPhase}
             />
           </div>
 
