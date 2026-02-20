@@ -1,5 +1,6 @@
 import SectionHeader from './SectionHeader';
 import ChromaGrid from '@/components/ui/ChromaGrid';
+import ScrollReveal from '../ui/ScrollReveal';
 
 const galleryItems = [
   {
@@ -77,22 +78,26 @@ const GallerySection = ({ className = '', isTransition = false }: GallerySection
     <section id="gallery" className={`py-24 ${className}`}>
       <div className="px-6 max-w-6xl mx-auto">
         <SectionHeader number="03.5" title="Gallery" />
-        <p className="text-muted-foreground mb-10">
-          A visual archive — hover to explore.
-        </p>
+        <ScrollReveal direction="up" delay={0.2}>
+          <p className="text-muted-foreground mb-10">
+            A visual archive — hover to explore.
+          </p>
+        </ScrollReveal>
       </div>
 
-      <div style={{ position: 'relative', minHeight: '600px' }}>
-        <ChromaGrid
-          items={galleryItems}
-          radius={320}
-          damping={0.45}
-          fadeOut={0.6}
-          ease="power3.out"
-          columns={3}
-          className={isTransition ? '[&_.chroma-overlay]:!backdrop-filter-none [&_.chroma-fade]:!backdrop-filter-none [&_.chroma-card]:!transition-none' : ''}
-        />
-      </div>
+      <ScrollReveal direction="up" delay={0.4}>
+        <div style={{ position: 'relative', minHeight: '600px' }}>
+          <ChromaGrid
+            items={galleryItems}
+            radius={320}
+            damping={0.45}
+            fadeOut={0.6}
+            ease="power3.out"
+            columns={3}
+            className={isTransition ? '[&_.chroma-overlay]:!backdrop-filter-none [&_.chroma-fade]:!backdrop-filter-none [&_.chroma-card]:!transition-none' : ''}
+          />
+        </div>
+      </ScrollReveal>
     </section>
   );
 };

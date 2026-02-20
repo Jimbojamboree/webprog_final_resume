@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Send, CheckCircle, XCircle } from 'lucide-react';
 import SectionHeader from './SectionHeader';
+import ScrollReveal from '../ui/ScrollReveal';
 
 interface TerminalSectionProps {
   className?: string;
@@ -85,11 +86,13 @@ const TerminalSection = ({ className = "", isTransition = false }: TerminalSecti
     <section id="terminal" className={`py-24 ${className}`}>
       <div className="px-6 max-w-4xl mx-auto">
         <SectionHeader number="04" title="The Terminal" />
-        <p className="text-muted-foreground mb-8">
-          Leave a digital footprint. Say hello or drop a critique.
-        </p>
+        <ScrollReveal direction="up" delay={0.2}>
+          <p className="text-muted-foreground mb-8">
+            Leave a digital footprint. Say hello or drop a critique.
+          </p>
+        </ScrollReveal>
 
-        <div className="rounded-lg border border-border overflow-hidden relative">
+        <ScrollReveal direction="up" delay={0.3} className="rounded-lg border border-border overflow-hidden relative">
           {/* Toast notification */}
           {toast && (
             <div
@@ -153,7 +156,7 @@ const TerminalSection = ({ className = "", isTransition = false }: TerminalSecti
               <Send size={16} />
             </button>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );

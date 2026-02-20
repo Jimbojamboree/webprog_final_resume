@@ -1,8 +1,8 @@
 import SectionHeader from './SectionHeader';
 import { Terminal, ChevronRight } from 'lucide-react';
-import { useState, lazy, Suspense } from 'react';
-
-const Robot = lazy(() => import('./Robot'));
+import { useState } from 'react';
+import ScrollReveal from '../ui/ScrollReveal';
+import Robot from './Robot';
 
 const skillCategories = [
   {
@@ -51,47 +51,51 @@ const SkillsSection = ({ className = "", isDarkMode = true, isTransition = false
         <SectionHeader number="02" title="Skills" />
 
         <div className="grid lg:grid-cols-5 gap-12 items-start">
-          {/* Left Column: 3D Robot (Desktop Only) — skip during theme transition to avoid lag */}
+          {/* Left Column: 3D Robot (Desktop Only) — skip during theme transition to avoid lag.
+              We intentionally DO NOT use ScrollReveal here. GSAP's autoAlpha applies 'visibility: hidden',
+              which blocks Spline's internal IntersectionObserver from pre-loading the WebGL context. 
+              By letting it remain visible to the DOM, it parses in the background without causing a scroll stutter! */}
           <div className="hidden lg:block lg:col-span-2 sticky top-24 z-[55]">
             <div className="bg-[#0B1120]/30 border border-slate-800/50 rounded-xl overflow-hidden backdrop-blur-sm h-[600px] w-full">
               {!isTransition ? (
-                <Suspense fallback={<div className="h-[600px] w-full flex items-center justify-center text-muted-foreground">Loading model...</div>}>
-                  <Robot />
-                </Suspense>
+                <Robot />
               ) : (
                 <div className="h-[600px] w-full flex items-center justify-center text-muted-foreground">Loading model...</div>
               )}
             </div>
-
           </div>
 
           {/* Right Column: Skills List */}
           <div className="lg:col-span-3 space-y-12">
             {/* Scanline header bar */}
-            <div className="flex items-center gap-3 mb-10 font-mono text-xs text-muted-foreground">
-              <Terminal size={12} className="text-primary" />
-              <span className="text-primary">&gt;</span>
-              <span className="tracking-widest uppercase">tech_stack.config</span>
-              <span className="flex-1 border-b border-dashed border-border" />
-              <span className="text-primary/60">
-                {skillCategories.reduce((a, c) => a + c.skills.length, 0)} loaded
-              </span>
-            </div>
+            <ScrollReveal direction="up" delay={0.1}>
+              <div className="flex items-center gap-3 mb-10 font-mono text-xs text-muted-foreground">
+                <Terminal size={12} className="text-primary" />
+                <span className="text-primary">&gt;</span>
+                <span className="tracking-widest uppercase">tech_stack.config</span>
+                <span className="flex-1 border-b border-dashed border-border" />
+                <span className="text-primary/60">
+                  {skillCategories.reduce((a, c) => a + c.skills.length, 0)} loaded
+                </span>
+              </div>
+            </ScrollReveal>
 
             <div className="space-y-10">
-              {skillCategories.map((cat) => (
+              {skillCategories.map((cat, catIdx) => (
                 <div key={cat.label}>
                   {/* Category label */}
-                  <div className="flex items-center gap-2 mb-4">
-                    <ChevronRight size={14} className="text-primary" />
-                    <span className="font-mono text-xs tracking-widest uppercase text-primary/80">
-                      {cat.label}
-                    </span>
-                    <span className="flex-1 border-b border-dashed border-border/40" />
-                  </div>
+                  <ScrollReveal direction="left" delay={0.2 + (catIdx * 0.1)}>
+                    <div className="flex items-center gap-2 mb-4">
+                      <ChevronRight size={14} className="text-primary" />
+                      <span className="font-mono text-xs tracking-widest uppercase text-primary/80">
+                        {cat.label}
+                      </span>
+                      <span className="flex-1 border-b border-dashed border-border/40" />
+                    </div>
+                  </ScrollReveal>
 
                   {/* Skill badges */}
-                  <div className="flex flex-wrap gap-3">
+                  <ScrollReveal isStaggeredChildren stagger={0.1} delay={0.3 + (catIdx * 0.1)} className="flex flex-wrap gap-3">
                     {cat.skills.map((skill) => (
                       <div
                         key={skill.name}
@@ -136,7 +140,7 @@ const SkillsSection = ({ className = "", isDarkMode = true, isTransition = false
                         )}
                       </div>
                     ))}
-                  </div>
+                  </ScrollReveal>
                 </div>
               ))}
             </div>

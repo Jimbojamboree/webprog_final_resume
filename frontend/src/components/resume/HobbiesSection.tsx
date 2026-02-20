@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Power, Send, CheckCircle, XCircle, Monitor, Smartphone, Play } from 'lucide-react';
 import SectionHeader from './SectionHeader';
+import ScrollReveal from '../ui/ScrollReveal';
 
 const SpaceGame = lazy(() => import('./SpaceGame'));
 
@@ -83,7 +84,7 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
 
         <div className="grid md:grid-cols-2 gap-16 items-start">
           {/* ── Desktop PC ── */}
-          <div>
+          <ScrollReveal direction="up" delay={0.2}>
             <h3 className="font-mono text-sm text-muted-foreground mb-6 tracking-wide flex items-center gap-2">
               <Monitor size={16} /> Computer Programming
             </h3>
@@ -222,10 +223,10 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
                   <span className="tracking-wider">Press the CPU power button to turn on</span>
                 </div>
               )}            </div>
-          </div>
+          </ScrollReveal>
 
           {/* ── Mobile Phone ── */}
-          <div>
+          <ScrollReveal direction="up" delay={0.4}>
             <h3 className="font-mono text-sm text-muted-foreground mb-6 tracking-wide flex items-center gap-2">
               <Smartphone size={16} /> Mobile Gaming
             </h3>
@@ -309,7 +310,7 @@ const HobbiesSection = ({ className = "" }: HobbiesSectionProps) => {
                 <span>Play Game</span>
               </button>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
 
         {/* Inline keyframes for game animations */}

@@ -1,5 +1,6 @@
 import { Briefcase, GraduationCap, ChevronRight, Terminal } from 'lucide-react';
 import SectionHeader from './SectionHeader';
+import ScrollReveal from '../ui/ScrollReveal';
 import LightRays from './LightRays';
 import { useState } from 'react';
 
@@ -85,13 +86,15 @@ const ExperienceSection = ({ className = "", isDarkMode = true }: ExperienceSect
         <SectionHeader number="01" title="Experience" />
 
         {/* Scanline header bar */}
-        <div className="flex items-center gap-3 mb-8 font-mono text-xs text-muted-foreground">
-          <Terminal size={12} className="text-primary" />
-          <span className="text-primary">&gt;</span>
-          <span className="tracking-widest uppercase">system.log</span>
-          <span className="flex-1 border-b border-dashed border-border" />
-          <span className="text-primary/60">{experiences.length} entries</span>
-        </div>
+        <ScrollReveal direction="up" delay={0.2}>
+          <div className="flex items-center gap-3 mb-8 font-mono text-xs text-muted-foreground">
+            <Terminal size={12} className="text-primary" />
+            <span className="text-primary">&gt;</span>
+            <span className="tracking-widest uppercase">system.log</span>
+            <span className="flex-1 border-b border-dashed border-border" />
+            <span className="text-primary/60">{experiences.length} entries</span>
+          </div>
+        </ScrollReveal>
 
         <div className="relative ml-2">
           {/* Timeline line — glowing */}
@@ -101,86 +104,87 @@ const ExperienceSection = ({ className = "", isDarkMode = true }: ExperienceSect
           </div>
 
           {experiences.map((exp, i) => (
-            <div
-              key={i}
-              className="relative pl-12 pb-12 last:pb-0 group"
-              onMouseEnter={() => setHoveredIdx(i)}
-              onMouseLeave={() => setHoveredIdx(null)}
-            >
-              {/* Timeline node */}
-              <div className={`
+            <ScrollReveal direction="up" delay={0.3 + (i * 0.15)} key={i}>
+              <div
+                className="relative pl-12 pb-12 last:pb-0 group"
+                onMouseEnter={() => setHoveredIdx(i)}
+                onMouseLeave={() => setHoveredIdx(null)}
+              >
+                {/* Timeline node */}
+                <div className={`
                 absolute left-0 top-1 w-7 h-7 rounded border
                 flex items-center justify-center transition-all duration-300
                 ${hoveredIdx === i
-                  ? 'border-primary bg-primary/20 text-primary shadow-[0_0_12px_hsl(35,90%,55%,0.3)]'
-                  : 'border-border bg-card text-muted-foreground'
-                }
+                    ? 'border-primary bg-primary/20 text-primary shadow-[0_0_12px_hsl(35,90%,55%,0.3)]'
+                    : 'border-border bg-card text-muted-foreground'
+                  }
               `}>
-                {exp.icon}
-              </div>
+                  {exp.icon}
+                </div>
 
-              {/* Card */}
-              <div className={`
+                {/* Card */}
+                <div className={`
                 relative border rounded-lg p-5 transition-all duration-300 overflow-hidden
                 ${hoveredIdx === i
-                  ? 'border-primary/40 bg-card shadow-[0_0_20px_hsl(35,90%,55%,0.06)]'
-                  : 'border-border bg-card/50'
-                }
+                    ? 'border-primary/40 bg-card shadow-[0_0_20px_hsl(35,90%,55%,0.06)]'
+                    : 'border-border bg-card/50'
+                  }
               `}>
-                {/* Corner accents */}
-                <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-primary/30" />
-                <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-primary/30" />
-                <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-primary/30" />
-                <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-primary/30" />
+                  {/* Corner accents */}
+                  <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-primary/30" />
+                  <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-primary/30" />
+                  <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-primary/30" />
+                  <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-primary/30" />
 
-                {/* Top bar */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <ChevronRight size={12} className="text-primary" />
-                    <span className="font-mono text-xs text-primary tracking-wider">{exp.period}</span>
-                  </div>
-                  <span className={`
+                  {/* Top bar */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <ChevronRight size={12} className="text-primary" />
+                      <span className="font-mono text-xs text-primary tracking-wider">{exp.period}</span>
+                    </div>
+                    <span className={`
                     font-mono text-[10px] tracking-widest px-2 py-0.5 rounded-sm border
                     ${exp.status === 'ACTIVE'
-                      ? 'text-green-400 border-green-400/30 bg-green-400/5'
-                      : 'text-muted-foreground border-border bg-muted/30'
-                    }
+                        ? 'text-green-400 border-green-400/30 bg-green-400/5'
+                        : 'text-muted-foreground border-border bg-muted/30'
+                      }
                   `}>
-                    {exp.status}
-                  </span>
-                </div>
-
-                <h3 className="text-lg font-bold mb-2 text-foreground group-hover:text-primary transition-colors duration-300">
-                  {exp.title}
-                </h3>
-
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-2xl">
-                  {exp.description}
-                </p>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2">
-                  {exp.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="font-mono text-[10px] tracking-wider uppercase px-2.5 py-1 rounded-sm border border-border bg-secondary/50 text-muted-foreground"
-                    >
-                      {tag}
+                      {exp.status}
                     </span>
-                  ))}
-                </div>
+                  </div>
 
-                {/* Subtle scanline overlay on hover */}
-                {hoveredIdx === i && (
-                  <div
-                    className="pointer-events-none absolute inset-0 opacity-[0.03]"
-                    style={{
-                      backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(35,90%,55%) 2px, hsl(35,90%,55%) 3px)',
-                    }}
-                  />
-                )}
+                  <h3 className="text-lg font-bold mb-2 text-foreground group-hover:text-primary transition-colors duration-300">
+                    {exp.title}
+                  </h3>
+
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-2xl">
+                    {exp.description}
+                  </p>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2">
+                    {exp.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="font-mono text-[10px] tracking-wider uppercase px-2.5 py-1 rounded-sm border border-border bg-secondary/50 text-muted-foreground"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Subtle scanline overlay on hover */}
+                  {hoveredIdx === i && (
+                    <div
+                      className="pointer-events-none absolute inset-0 opacity-[0.03]"
+                      style={{
+                        backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(35,90%,55%) 2px, hsl(35,90%,55%) 3px)',
+                      }}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
 
