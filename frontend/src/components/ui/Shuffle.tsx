@@ -31,7 +31,8 @@ const Shuffle = ({
     colorTo = undefined,
     triggerOnce = true,
     respectReducedMotion = true,
-    triggerOnHover = true
+    triggerOnHover = true,
+    disableAnimation = false
 }) => {
     const ref = useRef(null);
     const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -335,6 +336,14 @@ const Shuffle = ({
             };
 
             const create = () => {
+                if (disableAnimation) {
+                    build();
+                    cleanupToStill();
+                    if (colorTo) gsap.set(inners(), { color: colorTo });
+                    setReady(true);
+                    return;
+                }
+
                 build();
                 if (scrambleCharset) randomizeScrambles();
                 play();
@@ -376,7 +385,8 @@ const Shuffle = ({
                 triggerOnce,
                 respectReducedMotion,
                 triggerOnHover,
-                onShuffleComplete
+                onShuffleComplete,
+                disableAnimation
             ],
             scope: ref
         }
