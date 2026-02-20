@@ -4,9 +4,10 @@ import SectionHeader from './SectionHeader';
 
 interface TerminalSectionProps {
   className?: string;
+  isTransition?: boolean;
 }
 
-const TerminalSection = ({ className = "" }: TerminalSectionProps) => {
+const TerminalSection = ({ className = "", isTransition = false }: TerminalSectionProps) => {
   const [messages, setMessages] = useState<{ handle: string; msg: string; time: string }[]>([]);
   const [handle, setHandle] = useState('');
   const [message, setMessage] = useState('');
@@ -15,22 +16,31 @@ const TerminalSection = ({ className = "" }: TerminalSectionProps) => {
 
   const BACKEND = import.meta.env.VITE_BACKEND_URL ?? '';
 
-  // Fetch messages on mount
   useEffect(() => {
-    fetch(`${BACKEND}/api/guestbook`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          const mapped = data.map((item: any) => ({
-            handle: item.name,
-            msg: item.comment,
-            time: new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }));
-          setMessages(mapped.reverse());
-        }
-      })
-      .catch(err => console.error('Failed to fetch guestbook:', err));
-  }, []);
+    // Basic cache to prevent visual flicker when overlay mounts the component a second time
+    const win = window as any;
+    if (win._cachedGuestbook) {
+      setMessages(win._cachedGuestbook);
+    }
+
+    if (!isTransition) { // Don't redundantly fetch in the overlay
+      fetch(`${BACKEND}/api/guestbook`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            const mapped = data.map((item: any) => ({
+              handle: item.name,
+              msg: item.comment,
+              time: new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }));
+            const rev = mapped.reverse();
+            win._cachedGuestbook = rev;
+            setMessages(rev);
+          }
+        })
+        .catch(err => console.error('Failed to fetch guestbook:', err));
+    }
+  }, [isTransition]);
 
   // Auto-dismiss toast
   useEffect(() => {

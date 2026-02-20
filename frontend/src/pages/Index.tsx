@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect, Suspense, lazy, Component } from 'react';
+import { flushSync } from 'react-dom';
 import type { ReactNode, ErrorInfo } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import Navbar from '@/components/resume/Navbar';
@@ -49,8 +50,8 @@ const ResumeContent = ({ isDarkMode, onToggle, scrollOffset, isTransition = fals
         <ExperienceSection isDarkMode={isDarkMode} />
         <SkillsSection isDarkMode={isDarkMode} className="bg-secondary/30" isTransition={isTransition} />
         <HobbiesSection />
-        <GallerySection className="bg-secondary/30" />
-        <TerminalSection />
+        <GallerySection className="bg-secondary/30" isTransition={isTransition} />
+        <TerminalSection isTransition={isTransition} />
         <div className="h-14" /> {/* FooterBar spacer */}
       </div>
     </div>
@@ -66,6 +67,7 @@ const Index = () => {
   const [ripplePos, setRipplePos] = useState({ x: 0, y: 0 });
   const [transitionScroll, setTransitionScroll] = useState(0);
   const isAnimating = useRef(false);
+  const overlayTargetDark = useRef(false); // locked at toggle time — never reactive
 
   // Intro animation state
   const [introPhase, setIntroPhase] = useState<'closed' | 'opening' | 'done'>('closed');
@@ -222,22 +224,47 @@ const Index = () => {
     if (isAnimating.current) return;
     isAnimating.current = true;
 
-    const x = e.clientX;
-    const y = e.clientY;
+    // If triggered by keyboard (space/enter), clientX/Y will be 0.
+    // Fall back to the button's center position for the ripple origin.
+    let x = e.clientX;
+    let y = e.clientY;
+    if (x === 0 && y === 0) {
+      const btn = e.currentTarget as HTMLElement;
+      const rect = btn.getBoundingClientRect();
+      x = rect.left + rect.width / 2;
+      y = rect.top + rect.height / 2;
+    }
+
     const currentScroll = window.scrollY;
+
+    // Lock the overlay's target theme BEFORE any state changes.
+    // This ref stays constant even when isDarkMode flips later.
+    overlayTargetDark.current = !isDarkMode;
 
     setRipplePos({ x, y });
     setTransitionScroll(currentScroll);
     setIsTransitioning(true);
     setNavTheme((prev) => !prev); // flip navbar theme immediately
 
-    // Swap theme AFTER animation fully completes — no flicker
+    // After clip-path animation completes:
+    // 1. Swap the base theme (invisible — overlay still covers it with correct theme via ref)
+    // 2. Wait for the browser to paint the new base theme
+    // 3. Remove overlay — seamless handoff
     setTimeout(() => {
-      setIsDarkMode((prev) => !prev);
-      setIsTransitioning(false);
-      isAnimating.current = false;
+      flushSync(() => {
+        setIsDarkMode((prev) => !prev);
+      });
+
+      // Double-rAF: let the browser fully paint the new base theme
+      // under the still-present overlay before removing it
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsTransitioning(false);
+          isAnimating.current = false;
+        });
+      });
     }, 1000);
-  }, []);
+  }, [isDarkMode]);
 
   return (
     <>
@@ -301,7 +328,7 @@ const Index = () => {
       )}
 
       {/* LAYER 1: Base — stays in document flow, scroll position preserved */}
-      <div className={`${isDarkMode ? 'theme-dark' : 'theme-light'} relative`}>
+      <div className={`${isDarkMode ? 'theme-dark' : 'theme-light'} relative ${isTransitioning ? '!transition-none !duration-0 [&_*]:!transition-none [&_*]:!duration-0' : ''}`}>
         {/* LANYARD — absolute within hero area, scrolls with content */}
         <div
           className="absolute top-0 left-0 right-0 z-[58] hidden lg:block pointer-events-none"
@@ -327,9 +354,9 @@ const Index = () => {
           }}
         >
           {/* Target theme content, synced to user's scroll position */}
-          <div className={!isDarkMode ? 'theme-dark' : 'theme-light'}>
+          <div className={overlayTargetDark.current ? 'theme-dark' : 'theme-light'}>
             <ResumeContent
-              isDarkMode={!isDarkMode}
+              isDarkMode={overlayTargetDark.current}
               onToggle={() => { }}
               scrollOffset={transitionScroll}
               isTransition={true}
@@ -345,7 +372,7 @@ const Index = () => {
               transform: 'translate(-50%, -50%)',
               animation: 'explode-wave 1s ease-out forwards',
               borderStyle: 'solid',
-              borderColor: !isDarkMode
+              borderColor: overlayTargetDark.current
                 ? 'hsla(35, 90%, 55%, 0.25)'
                 : 'hsla(220, 70%, 60%, 0.25)',
             }}

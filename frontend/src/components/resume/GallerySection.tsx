@@ -69,9 +69,10 @@ const galleryItems = [
 
 interface GallerySectionProps {
   className?: string;
+  isTransition?: boolean;
 }
 
-const GallerySection = ({ className = '' }: GallerySectionProps) => {
+const GallerySection = ({ className = '', isTransition = false }: GallerySectionProps) => {
   return (
     <section id="gallery" className={`py-24 ${className}`}>
       <div className="px-6 max-w-6xl mx-auto">
@@ -89,6 +90,7 @@ const GallerySection = ({ className = '' }: GallerySectionProps) => {
           fadeOut={0.6}
           ease="power3.out"
           columns={3}
+          className={isTransition ? '[&_.chroma-overlay]:!backdrop-filter-none [&_.chroma-fade]:!backdrop-filter-none [&_.chroma-card]:!transition-none' : ''}
         />
       </div>
     </section>

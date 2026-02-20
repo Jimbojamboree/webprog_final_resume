@@ -83,7 +83,8 @@ const Navbar = ({ isDarkMode, onToggle, hideControls = false }: NavbarProps) => 
           </a>
         ))}
         <button
-          onClick={onToggle}
+          onClick={(e) => { (e.currentTarget as HTMLElement).blur(); onToggle(e); }}
+          tabIndex={-1}
           className="w-9 h-9 rounded-md bg-primary/10 border border-primary/30 flex items-center justify-center hover:bg-primary/20 hover:border-primary/50 transition-all duration-1000"
           aria-label="Toggle theme"
         >
@@ -97,7 +98,8 @@ const Navbar = ({ isDarkMode, onToggle, hideControls = false }: NavbarProps) => 
 
       {/* Mobile: theme toggle only */}
       <button
-        onClick={onToggle}
+        onClick={(e) => { (e.currentTarget as HTMLElement).blur(); onToggle(e); }}
+        tabIndex={-1}
         className={`md:hidden w-9 h-9 rounded-md bg-primary/10 border border-primary/30 flex items-center justify-center hover:bg-primary/20 transition-all duration-1000 ${hideControls ? 'opacity-0 pointer-events-none' : ''
           }`}
         aria-label="Toggle theme"
